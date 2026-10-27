@@ -155,6 +155,7 @@ body{margin:0}
 @media (max-width:520px){.ai-body .form label.wide2{grid-column:auto}}
 .presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.82rem;color:var(--muted)}
 .presets button{font-size:.8rem;padding:5px 10px;border-radius:999px}
+.presets button[aria-pressed="true"]{background:var(--k-bia);border-color:var(--k-bia);color:#fff;font-weight:700}
 .ai-acts a.lnk{font-size:.86rem;padding:7px 12px;border-radius:6px;border:1px dashed var(--line);color:var(--ink);text-decoration:none}
 .ai-acts a.lnk:hover{border-color:var(--ink)}
 @media (prefers-reduced-motion:reduce){.aibox summary::before{transition:none}}
@@ -390,21 +391,19 @@ body{margin:0}
       <div class="card" id="aiBox">
       <div class="ai-body">
         <div class="form">
-          <label>Loại bài<select id="pKind"><option value="giang">Bài giảng mới</option><option value="luyentap">Luyện tập củng cố</option></select></label>
+          <label class="wide2">Loại bài<select id="pKind"></select></label>
           <label class="wide2">Bài học / chủ đề<input id="pLesson" value="Phương trình lượng giác cơ bản"></label>
           <label>Lớp<select id="pGrade"><option>Lớp 10</option><option selected>Lớp 11</option><option>Lớp 12</option><option>Lớp 9</option></select></label>
           <label>Bộ sách<input id="pBook" value="Kết nối tri thức với cuộc sống"></label>
+          <label>Đối tượng lớp<select id="pLevel"><option>Lớp đại trà</option><option>Lớp khá – giỏi</option><option>Lớp cần hỗ trợ nhiều</option><option>Lớp có nhiều trình độ (phân hoá)</option></select></label>
+          <label class="wide2">Năng lực trọng tâm<select id="pFocus"><option>Cân bằng các năng lực toán học</option><option>Tư duy và lập luận toán học</option><option>Mô hình hoá toán học</option><option>Giải quyết vấn đề toán học</option><option>Giao tiếp toán học</option><option>Sử dụng công cụ, phương tiện học toán</option></select></label>
           <label>Số ví dụ<select id="pVD"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
           <label>Câu trắc nghiệm<select id="pTN"><option>2</option><option selected>3</option><option>4</option><option>6</option><option>8</option><option>10</option></select></label>
           <label>Câu đúng/sai<select id="pDS"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></label>
           <label>Câu trả lời ngắn<select id="pTL"><option>0</option><option selected>1</option><option>2</option><option>3</option><option>4</option></select></label>
         </div>
-        <div class="presets" aria-label="Chọn nhanh">
-          <span>Chọn nhanh:</span>
-          <button type="button" data-p="giang">Bài giảng mới (3 VD · 5 câu)</button>
-          <button type="button" data-p="luyentap">Tiết luyện tập (2 VD · 12 câu)</button>
-          <button type="button" data-p="ontap">Ôn kiểm tra (1 VD · 15 câu)</button>
-        </div>
+        <div class="presets" id="kindChips" aria-label="Chọn nhanh loại bài"></div>
+        <p class="hint" id="kindNote"></p>
         <div class="row ai-acts">
           <button class="primary" id="cpPrompt">① Sao chép prompt</button>
           <a class="lnk" href="https://claude.ai/new" target="_blank" rel="noopener">Mở Claude ↗</a>
@@ -1800,20 +1799,88 @@ function syncWeb(){ renderSites(); const n=Object.values(W).filter(w=>!w.el.clas
 renderSites();
 
 /* ---------------- prompt AI ---------------- */
+const KINDS={
+  giang:{name:"Bài giảng mới (4 hoạt động)",chip:"Bài giảng mới",mode:"full",def:[3,3,1,1],
+    goal:"BÀI GIẢNG MỚI theo tiến trình 4 hoạt động của chương trình GDPT 2018: Mở đầu → Hình thành kiến thức → Luyện tập → Vận dụng",
+    rules:["Mở đầu bằng khối `## Khởi động {vidu}`: một tình huống thực tế hoặc câu hỏi gây tò mò; các dòng >> là câu hỏi dẫn dắt; => nêu vấn đề bài học sẽ giải quyết.",
+      "Hình thành kiến thức: trước mỗi khối công thức có một khối `## Khám phá k {vidu}` để học sinh tự phát hiện quy luật (>> là câu hỏi gợi mở, => là kết luận rút ra).",
+      "Sau phần luyện tập có ít nhất 1 câu vận dụng gắn với thực tế.",
+      "Kết thúc bằng khối `## Ghi nhớ {note}` tóm tắt 3–4 ý cốt lõi."]},
+  khoidong:{name:"Khởi động / kiểm tra bài cũ (5 phút)",chip:"Khởi động 5 phút",mode:"thuchanh",def:[0,5,0,1],
+    goal:"phần KHỞI ĐỘNG – KIỂM TRA BÀI CŨ đầu giờ, khoảng 5 phút",
+    rules:["Câu hỏi thật ngắn, đọc xong là làm được trong 30–60 giây (ghi {thuchanh, 30 giây} hoặc {thuchanh, 1 phút}).",
+      "Chỉ ôn đúng kiến thức nền cần cho bài học hôm nay; câu cuối gợi mở sang bài mới.",
+      "Tối đa 1 khối công thức nhắc lại thật gọn (3–4 dòng)."]},
+  khampha:{name:"Hình thành kiến thức (học sinh tự khám phá)",chip:"Khám phá kiến thức",mode:"full",def:[3,2,0,1],
+    goal:"tiết HÌNH THÀNH KIẾN THỨC theo hướng học sinh tự khám phá, giáo viên chỉ gợi mở",
+    rules:["Mỗi kiến thức mới đi qua 3 nhịp: `## Khám phá k {vidu}` (đề là một hoạt động quan sát/tính toán/đo đạc; >> là chuỗi câu hỏi gợi mở từ dễ đến khó; => là quy luật học sinh rút ra) → khối công thức chính thức → 1 câu thực hành nhận biết.",
+      "Câu hỏi gợi mở không nói trước kết quả; mỗi câu chỉ một bước tư duy.",
+      "Có khối `## Chú ý {cam}` nêu điều kiện, trường hợp đặc biệt dễ bỏ sót."]},
+  luyentap:{name:"Luyện tập củng cố",chip:"Tiết luyện tập",mode:"luyentap",def:[2,6,3,3],
+    goal:"tiết LUYỆN TẬP CỦNG CỐ",
+    rules:["2–4 khối công thức nhắc lại thật ngắn gọn, mỗi khối là phương pháp giải một dạng bài.",
+      "Câu hỏi phủ đủ các dạng bài của chủ đề, sắp từ nhận biết → thông hiểu → vận dụng; có ít nhất 1 bài toán thực tế.",
+      "Mỗi câu ghi thời gian làm hợp lý (trắc nghiệm 1–2 phút, đúng/sai 3–4 phút, trả lời ngắn 2–4 phút)."]},
+  phanhoa:{name:"Luyện tập phân hoá 3 mức",chip:"Phân hoá 3 mức",mode:"luyentap",def:[3,6,2,3],
+    goal:"tiết LUYỆN TẬP PHÂN HOÁ cho lớp nhiều trình độ",
+    rules:["Chia câu thành 3 mức, ghi mức ở đầu tên khối: `## Mức 1 – Câu 1 {thuchanh, 1 phút}` (nhận biết – thông hiểu), `## Mức 2 – …` (vận dụng), `## Mức 3 – …` (vận dụng cao).",
+      "Mỗi mức có đúng 1 ví dụ mẫu `## Ví dụ Mức k {vidu}` đặt ngay trước các câu của mức đó.",
+      "Mức 1 dành cho học sinh cần hỗ trợ, Mức 2 cho học sinh khá, Mức 3 cho học sinh giỏi; câu Mức 3 có gợi ý ở dòng >> đầu tiên."]},
+  saisot:{name:"Sửa sai lầm thường gặp",chip:"Sửa sai lầm",mode:"luyentap",def:[3,3,2,0],
+    goal:"tiết CHỮA SAI LẦM THƯỜNG GẶP của học sinh",
+    rules:["Mỗi ví dụ `## Tìm lỗi sai k {vidu}` trình bày LỜI GIẢI CỦA MỘT BẠN HỌC SINH có lỗi: các dòng >> là các bước của bạn ấy (giữ nguyên bước sai); dòng => chỉ ra bước sai, vì sao sai và kết quả đúng.",
+      "Sai lầm phải là lỗi thật học sinh hay mắc (quên điều kiện, sai dấu, nhầm công thức, kết luận thiếu nghiệm…).",
+      "Câu đúng/sai: mỗi mệnh đề là một nhận định đúng hoặc một ngộ nhận phổ biến.",
+      "Phương án nhiễu trắc nghiệm là kết quả của chính các sai lầm đó; lời giải nêu tên sai lầm."]},
+  thucte:{name:"Vận dụng thực tế – mô hình hoá",chip:"Toán thực tế",mode:"luyentap",def:[2,2,1,3],
+    goal:"tiết VẬN DỤNG TOÁN HỌC VÀO THỰC TẾ, phát triển năng lực mô hình hoá",
+    rules:["Bối cảnh gần gũi học sinh Việt Nam/TP.HCM: mua sắm, giao thông, xây dựng, thể thao, tài chính – lãi suất, môi trường, khoa học.",
+      "Lời giải ví dụ đi đủ 4 bước mô hình hoá: chọn ẩn và mô hình → lập biểu thức/phương trình → giải → trả lời và kiểm tra ý nghĩa thực tế.",
+      "Số liệu hợp lý, đáp số đẹp; câu trả lời ngắn ghi rõ đơn vị và cách làm tròn."]},
+  trochoi:{name:"Trò chơi thi đua (Ai nhanh hơn – Rung chuông vàng)",chip:"Trò chơi thi đua",mode:"thuchanh",def:[0,10,0,2],
+    goal:"phần TRÒ CHƠI THI ĐUA cả lớp (kiểu Ai nhanh hơn / Rung chuông vàng)",
+    rules:["Câu hỏi ngắn, độ khó tăng dần, mỗi câu 20–45 giây (ghi {thuchanh, 30 giây}).",
+      "Câu cuối là câu “Ngôi sao hy vọng” khó hơn hẳn.",
+      "Không cần khối công thức; thêm 1 khối `## Luật chơi {note}` gồm 3 gạch đầu dòng."]},
+  ontap:{name:"Ôn tập chương / ôn kiểm tra",chip:"Ôn kiểm tra",mode:"luyentap",def:[2,8,3,4],
+    goal:"tiết ÔN TẬP CHƯƠNG – ÔN KIỂM TRA theo cấu trúc đề mới",
+    rules:["Mỗi dạng bài có một khối công thức `## Dạng k: tên dạng {màu}` tóm tắt phương pháp giải trong 3–5 dòng.",
+      "Câu hỏi theo cấu trúc đề kiểm tra mới (trắc nghiệm, đúng/sai, trả lời ngắn); tỉ lệ biết – hiểu – vận dụng khoảng 4 – 3 – 3.",
+      "Nếu nội dung gồm nhiều chủ đề, mỗi chủ đề mở bằng một dòng `# Tên chủ đề` riêng."]}
+};
+const LEVEL_NOTE={"Lớp đại trà":"Ngôn ngữ dễ hiểu, số liệu đẹp, ưu tiên mức nhận biết – thông hiểu, có 1–2 câu vận dụng.",
+  "Lớp khá – giỏi":"Tăng câu vận dụng và vận dụng cao, có câu đòi hỏi lập luận nhiều bước.",
+  "Lớp cần hỗ trợ nhiều":"Chia nhỏ bước giải, nhắc lại kiến thức nền, nhiều câu nhận biết; tránh câu đánh đố.",
+  "Lớp có nhiều trình độ (phân hoá)":"Sắp câu theo 3 mức rõ ràng để học sinh chọn mức phù hợp."};
+function fillSel(id,a,b,v){ $(id).innerHTML=Array.from({length:b-a+1},(_,i)=>`<option>${a+i}</option>`).join(""); $(id).value=String(v); }
+$("pKind").innerHTML=Object.entries(KINDS).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join("");
+$("kindChips").innerHTML="<span>Chọn nhanh:</span>"+Object.entries(KINDS).map(([k,v])=>`<button type="button" data-k="${k}">${v.chip}</button>`).join("");
+fillSel("pVD",0,6,3); fillSel("pTN",0,12,3); fillSel("pDS",0,4,1); fillSel("pTL",0,6,1);
+function applyKind(k,setCounts){ const K=KINDS[k]||KINDS.giang; $("pKind").value=k;
+  if(setCounts){ ["pVD","pTN","pDS","pTL"].forEach((id,i)=>$(id).value=String(K.def[i])); }
+  $("kindNote").textContent=`Gợi ý khi chiếu: kiểu "${{full:"Bài giảng đầy đủ",luyentap:"Luyện tập củng cố",thuchanh:"Chỉ câu luyện tập"}[K.mode]}" — ứng dụng tự chọn sẵn khi thầy dán kết quả.`;
+  document.querySelectorAll("#kindChips [data-k]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===k)); }
 function prompt(){
-  const L=$("pLesson").value.trim()||"(tên bài)", G=$("pGrade").value, B=$("pBook").value.trim()||"Kết nối tri thức", vd=$("pVD").value, tn=+$("pTN").value, ds=+$("pDS").value, tl=+$("pTL").value;
-  const LT=$("pKind").value==="luyentap";
-  return `Bạn là giáo viên Toán THPT giỏi. Soạn nội dung TRÌNH CHIẾU ${LT?"tiết LUYỆN TẬP CỦNG CỐ cho chủ đề":"cho bài"} "${L}" — ${G}, bộ sách ${B} (GDPT 2018), gồm: ${LT?"2–4 khối công thức nhắc lại thật ngắn gọn":"các khối công thức trọng tâm"}, ${vd} ví dụ ${LT?"mẫu cho các dạng bài chính":"minh hoạ"} có lời giải từng bước, và ${tn+ds+tl} câu ${LT?"luyện tập":"thực hành"} theo định dạng đề THPT 2025 (${tn} trắc nghiệm 4 phương án${ds?`, ${ds} câu đúng/sai 4 mệnh đề`:""}${tl?`, ${tl} câu trả lời ngắn`:""}).
+  const L=$("pLesson").value.trim()||"(tên bài)", G=$("pGrade").value, B=$("pBook").value.trim()||"Kết nối tri thức",
+    vd=+$("pVD").value, tn=+$("pTN").value, ds=+$("pDS").value, tl=+$("pTL").value, K=KINDS[$("pKind").value]||KINDS.giang,
+    lv=$("pLevel").value, fc=$("pFocus").value;
+  const parts=[vd&&`${vd} ví dụ có lời giải từng bước`,(tn+ds+tl)&&`${tn+ds+tl} câu hỏi theo định dạng đề THPT 2025 (${[tn&&`${tn} trắc nghiệm 4 phương án`,ds&&`${ds} câu đúng/sai 4 mệnh đề`,tl&&`${tl} câu trả lời ngắn`].filter(Boolean).join(", ")})`].filter(Boolean).join(" và ");
+  return `Bạn là giáo viên Toán THPT xuất sắc với 20 năm kinh nghiệm dạy học tích cực, dạy học phát triển năng lực, luôn giúp học sinh hiểu bản chất và tiến bộ rõ rệt.
+Hãy soạn nội dung TRÌNH CHIẾU cho ${K.goal}: "${L}" — ${G}, bộ sách ${B} (chương trình GDPT 2018). Nội dung gồm ${parts||"các khối kiến thức trọng tâm"}.
 
-Yêu cầu nội dung:${LT?`
-- Đây là tiết luyện tập: câu hỏi phủ đủ các dạng bài của chủ đề, sắp xếp từ nhận biết → thông hiểu → vận dụng; có ít nhất 1 bài toán thực tế.
-- Mỗi câu ghi thời gian làm hợp lý (trắc nghiệm 1–2 phút, đúng/sai 3–4 phút, trả lời ngắn 2–4 phút).`:""}
-- Công thức đúng ký hiệu SGK, kèm điều kiện. Mỗi khối công thức 3–7 dòng.
-- Ví dụ đi từ dễ đến khó; mỗi bước giải là MỘT ý ngắn (sẽ hiện lần lượt khi giảng), tối đa 5 bước; kết luận ghi rõ đáp số.
-- Câu thực hành bám sát ví dụ, đáp án chính xác; phương án nhiễu hợp lý (sai lầm học sinh hay mắc); có lời giải ngắn 1–2 dòng.
-- Câu trả lời ngắn có đáp số là một số (dùng dấu phẩy thập phân).
+Đối tượng: ${lv}. ${LEVEL_NOTE[lv]||""}
+Năng lực trọng tâm: ${fc}${fc.startsWith("Cân bằng")?" (tư duy – lập luận, mô hình hoá, giải quyết vấn đề, giao tiếp toán học, sử dụng công cụ)":""}.
 
-Chỉ trả về MỘT khối mã \`\`\`markdown, không giải thích, đúng cú pháp sau:
+Yêu cầu riêng cho loại bài này:
+${K.rules.map(r=>"- "+r).join("\n")}
+
+Yêu cầu chung:
+- Công thức, ký hiệu đúng SGK, ghi kèm điều kiện. Mỗi khối công thức 3–7 dòng.
+- Mỗi bước giải (dòng >>) là MỘT ý ngắn vì sẽ hiện lần lượt khi giảng; tối đa 5 bước; kết luận (dòng =>) ghi rõ đáp số.
+- Đáp án chính xác tuyệt đối; phương án nhiễu là sai lầm học sinh hay mắc; mỗi câu có lời giải ngắn 1–2 dòng.
+- Câu trả lời ngắn có đáp số là một số (dấu phẩy thập phân).
+
+Chỉ trả về MỘT khối mã \`\`\`markdown, không giải thích thêm, đúng cú pháp sau:
 # ${L}
 
 ## 1. Tên khối công thức {do}
@@ -1834,7 +1901,7 @@ A. $...$
 C. $...$
 D. $...$
 >> Lời giải ngắn
-${ds?`
+
 ## Thực hành 2 {thuchanh, 4 phút}
 Đề chung cho câu đúng/sai ...
 a) Mệnh đề ... {Đ}
@@ -1842,31 +1909,32 @@ b) Mệnh đề ... {S}
 c) Mệnh đề ... {Đ}
 d) Mệnh đề ... {S}
 >> Giải thích ngắn
-`:""}${tl?`
+
 ## Thực hành 3 {thuchanh, 3 phút}
 Đề trả lời ngắn ...
 => 15
 >> Lời giải ngắn
-`:""}
+
 ## Ghi nhớ {note}
 - Ý cần nhớ
 
 Quy tắc bắt buộc:
-- Công thức LaTeX trong $...$; công thức giữa dòng $$...$$ trên MỘT dòng. Không dùng \\[ \\], \\( \\), align, bảng, hình.
+- Khối ví dụ/khám phá/tìm lỗi sai luôn có {vidu}; khối câu hỏi luôn có {thuchanh, thời gian}; tên khối có thể đổi theo yêu cầu riêng ở trên.
+- Công thức LaTeX trong $...$; công thức giữa dòng $$...$$ trên MỘT dòng. Không dùng \\[ \\], \\( \\), align, bảng, hình vẽ.
 - Mỗi dòng bắt đầu đúng ký hiệu: ">>" bước giải, "=>" đáp số, "A." đến "D." phương án, "a)" đến "d)" mệnh đề kèm {Đ} hoặc {S} ở cuối dòng.
 - Màu khối công thức chọn trong: do, cam, xanhla, xanhduong, xanhreu, vangreu, dohong, hong, tim, nau.
-- Thời gian mỗi câu ghi trong ngoặc nhọn: {thuchanh, 2 phút}. Không thêm dòng phụ đề hay dòng @.`;
+- Không thêm dòng phụ đề hay dòng bắt đầu bằng @.`;
 }
 function refreshPrompt(){ $("prompt").textContent=prompt(); }
-["pKind","pLesson","pGrade","pBook","pVD","pTN","pDS","pTL"].forEach(id=>$(id).addEventListener("input",refreshPrompt));
-const PRESETS={giang:{pKind:"giang",pVD:"3",pTN:"3",pDS:"1",pTL:"1"},luyentap:{pKind:"luyentap",pVD:"2",pTN:"6",pDS:"3",pTL:"3"},ontap:{pKind:"luyentap",pVD:"1",pTN:"8",pDS:"3",pTL:"4"}};
-document.querySelector(".presets").addEventListener("click",e=>{ const b=e.target.closest("[data-p]"); if(!b) return; Object.entries(PRESETS[b.dataset.p]).forEach(([id,v])=>{ $(id).value=v; }); savePrompt(); refreshPrompt(); toast("Đã chọn: "+b.textContent); });
-function savePrompt(){ store.set("prompt",Object.fromEntries(["pKind","pLesson","pGrade","pBook","pVD","pTN","pDS","pTL"].map(id=>[id,$(id).value]))); }
-(()=>{ const v=store.get("prompt",null); if(v) Object.entries(v).forEach(([id,x])=>{ if($(id)) $(id).value=x; }); })();
-["pKind","pLesson","pGrade","pBook","pVD","pTN","pDS","pTL"].forEach(id=>$(id).addEventListener("change",savePrompt));
+["pLesson","pGrade","pBook","pLevel","pFocus","pVD","pTN","pDS","pTL"].forEach(id=>$(id).addEventListener("input",refreshPrompt));
+$("kindChips").addEventListener("click",e=>{ const b=e.target.closest("[data-k]"); if(!b) return; applyKind(b.dataset.k,true); savePrompt(); refreshPrompt(); toast("Loại bài: "+KINDS[b.dataset.k].name); });
+$("pKind").addEventListener("change",()=>{ applyKind($("pKind").value,true); savePrompt(); refreshPrompt(); });
+function savePrompt(){ store.set("prompt",Object.fromEntries(["pKind","pLesson","pGrade","pBook","pLevel","pFocus","pVD","pTN","pDS","pTL"].map(id=>[id,$(id).value]))); }
+(()=>{ const v=store.get("prompt",null); if(v) Object.entries(v).forEach(([id,x])=>{ if($(id)&&x!=null) $(id).value=x; }); if(!KINDS[$("pKind").value]) $("pKind").value="giang"; applyKind($("pKind").value,false); })();
+["pLesson","pGrade","pBook","pLevel","pFocus","pVD","pTN","pDS","pTL"].forEach(id=>$(id).addEventListener("change",savePrompt));
 $("btnShowPrompt").onclick=()=>{ const h=!$("prompt").hidden; $("prompt").hidden=h; $("btnShowPrompt").setAttribute("aria-expanded",!h); $("btnShowPrompt").textContent=h?"Xem prompt":"Ẩn prompt"; };
 $("btnPasteAI").onclick=async()=>{
-  try{ const txt=await navigator.clipboard.readText(); if(!txt.trim()) throw 0; $("src").value=cleanAI(txt); save(); build(); showView("soan"); toast("Đã dán kết quả AI."); $("src").scrollIntoView({block:"nearest"}); }
+  try{ const txt=await navigator.clipboard.readText(); if(!txt.trim()) throw 0; $("src").value=cleanAI(txt); save(); modeFromKind(); build(); showView("soan"); toast("Đã dán kết quả AI."); $("src").scrollIntoView({block:"nearest"}); }
   catch{ showView("soan"); $("src").value=""; $("src").focus(); toast("Bấm Ctrl+V (Mac: Cmd+V) để dán kết quả AI vào ô nội dung."); }
 };
 // loại bỏ ```markdown ... ``` và lời dẫn AI thêm vào
@@ -1875,9 +1943,9 @@ function cleanAI(s){
   const m=/```(?:markdown|md)?\s*\n([\s\S]*?)\n```/i.exec(s); if(m) s=m[1];
   return s.trim()+"\n";
 }
-$("src").addEventListener("paste",()=>setTimeout(()=>{ const v=$("src").value; if(/```/.test(v)){ $("src").value=cleanAI(v); save(); build(); toast("Đã bỏ dấu ``` của AI."); } },0));
+$("src").addEventListener("paste",()=>setTimeout(()=>{ const v=$("src").value; if(/```/.test(v)){ $("src").value=cleanAI(v); save(); modeFromKind(); build(); toast("Đã bỏ dấu ``` của AI."); } },0));
 // kiểu bài ở khung chiếu → loại bài ở prompt
-$("mMode").addEventListener("change",()=>{ $("pKind").value=$("mMode").value==="full"?"giang":"luyentap"; savePrompt(); refreshPrompt(); });
+function modeFromKind(){ const K=KINDS[$("pKind").value]; if(K && $("mMode").value!==K.mode){ $("mMode").value=K.mode; store.set("mMode",K.mode); } }
 $("cpPrompt").onclick=async()=>{ try{ await navigator.clipboard.writeText(prompt()); toast("Đã sao chép prompt."); }catch{ const r=document.createRange(); r.selectNodeContents($("prompt")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast("Đã chọn sẵn — bấm Ctrl+C."); } };
 refreshPrompt();
 
