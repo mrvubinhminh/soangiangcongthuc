@@ -58,6 +58,12 @@ input,select{font-family:var(--f-ui);font-size:.9rem;padding:7px 9px;border:1px 
 .oi .x{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
 .settings label{display:flex;flex-direction:column;gap:4px;font-size:.78rem;color:var(--muted);font-weight:600}
+.settings h3,.modebar h3{grid-column:1/-1;margin:0;font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.settings label.chk,.modebar label.chk{flex-direction:row;align-items:center;gap:8px;color:var(--ink);font-size:.86rem;font-weight:500;align-self:end;padding-bottom:7px}
+.modebar{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;padding:12px;border:2px solid var(--k-th);border-radius:8px;background:var(--panel)}
+.modebar label{display:flex;flex-direction:column;gap:4px;font-size:.78rem;color:var(--muted);font-weight:600}
+.modebar .acts{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}
+button.auto{background:var(--k-th);border-color:var(--k-th);color:#fff;font-weight:700}
 p.hint{color:var(--muted);font-size:.86rem;margin:0;max-width:75ch}
 pre.code{background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:12px;font-family:var(--f-code);font-size:.8rem;line-height:1.55;white-space:pre-wrap;word-break:break-word;margin:0;max-height:520px;overflow:auto}
 .form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
@@ -73,6 +79,24 @@ kbd{font-family:var(--f-code);font-size:.78rem;border:1px solid var(--line);bord
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:6px;font-size:.88rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:90}
 .toast.show{opacity:1}
 
+/* hộp tạo bài bằng AI */
+.aibox{border:2px solid var(--k-bia);border-radius:10px;background:var(--panel);margin-bottom:16px}
+.aibox summary{cursor:pointer;list-style:none;display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:12px 14px;font-weight:700}
+.aibox summary::-webkit-details-marker{display:none}
+.aibox summary::before{content:"▸";color:var(--k-bia);transition:transform .2s}
+.aibox[open] summary::before{transform:rotate(90deg)}
+.ai-k{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:var(--k-bia);padding:2px 8px;border-radius:999px}
+.ai-hint{margin-left:auto;font-weight:500;font-size:.78rem;color:var(--muted)}
+.ai-body{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px}
+.ai-body .form{margin:0}
+.ai-body .form label.wide2{grid-column:span 2}
+@media (max-width:520px){.ai-body .form label.wide2{grid-column:auto}}
+.presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.82rem;color:var(--muted)}
+.presets button{font-size:.8rem;padding:5px 10px;border-radius:999px}
+.ai-acts a.lnk{font-size:.86rem;padding:7px 12px;border-radius:6px;border:1px dashed var(--line);color:var(--ink);text-decoration:none}
+.ai-acts a.lnk:hover{border-color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.aibox summary::before{transition:none}}
+
 /* ================= Sân khấu 16:9 ================= */
 #show{position:fixed;inset:0;z-index:50;background:#0b0d12;display:flex;align-items:center;justify-content:center}
 #show[hidden]{display:none!important}
@@ -87,6 +111,9 @@ kbd{font-family:var(--f-code);font-size:.78rem;border:1px solid var(--line);bord
 .slide{position:absolute;inset:0;display:flex;flex-direction:column}
 .sl-band{flex:none;display:flex;align-items:center;justify-content:space-between;gap:2cqw;padding:2.3cqh 4cqw;background:var(--c);color:var(--band-fg);
   font-family:var(--f-ui);font-weight:800;font-size:1.22em;letter-spacing:.02em;text-transform:uppercase;line-height:1.15}
+/* lấp đầy mọi tỉ lệ màn hình (4:3, 3:2, 16:10, 16:9…) */
+#show[data-fit="fill"] .stage{width:100vw;height:100vh;height:100dvh;aspect-ratio:auto;max-height:none}
+.stage{font-size:min(4.6cqh,2.6cqw)}
 .sl-band .tag{font-size:.5em;letter-spacing:.14em;opacity:.85;margin-right:.6em;padding:.2em .6em;border:.1em solid currentColor;border-radius:.3em;vertical-align:middle}
 .sl-band small{font-size:.5em;font-weight:600;opacity:.88;text-transform:none;letter-spacing:0;text-align:right;max-width:38%}
 .stage[data-theme="gradient"] .sl-band{background:linear-gradient(110deg,var(--c),color-mix(in srgb,var(--c) 55%,#7c3aed))}
@@ -178,6 +205,21 @@ kbd{font-family:var(--f-code);font-size:.78rem;border:1px solid var(--line);bord
 .help h3{margin:0 0 .6em;font-size:1.3em}
 .help .g{display:grid;grid-template-columns:repeat(2,1fr);gap:.35em 2em}
 .help kbd{font-size:.9em;color:var(--fg);background:var(--bg);border-color:var(--line)}
+/* tổng kết luyện tập */
+.sl-content.sum{align-items:center;text-align:center;gap:.45em;min-width:0}
+.sum-big{font-family:var(--f-ui);font-size:3.1em;font-weight:800;line-height:1;color:var(--fg)}
+.sum-big span{font-size:.42em;color:var(--muted);margin-left:.15em}
+.sum-sub{font-family:var(--f-ui);font-size:.6em;font-weight:600;color:var(--muted);max-width:30em}
+.sum-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:.35em;max-width:22em;margin:.3em 0}
+.sc{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:.1em;width:2.3em;height:2.3em;border-radius:.4em;border:.08em solid var(--line);background:var(--card);color:var(--fg);font-family:var(--f-ui);font-size:.6em;font-weight:800;line-height:1}
+.sc small{font-size:.75em}
+.sc.ok{background:var(--good);border-color:var(--good);color:#fff}
+.sc.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+/* tự động chạy */
+.auto-bar{position:absolute;left:0;right:0;top:0;height:.7cqh;z-index:6;pointer-events:none;display:none;background:color-mix(in srgb,var(--fg) 12%,transparent)}
+.auto-bar.on{display:block}
+.auto-bar i{display:block;height:100%;width:0;background:color-mix(in srgb,var(--fg) 60%,transparent)}
+.auto-bar.paused i{background:repeating-linear-gradient(90deg,color-mix(in srgb,var(--fg) 60%,transparent) 0 8px,transparent 8px 14px)}
 /* thanh điều khiển */
 .show-ctl{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;
   max-width:calc(100vw - 24px);padding:6px 8px;border-radius:12px;background:rgba(20,22,30,.88);color:#fff;font:500 12.5px var(--f-ui);box-shadow:0 6px 24px rgba(0,0,0,.35);transition:opacity .3s}
@@ -200,38 +242,91 @@ kbd{font-family:var(--f-code);font-size:.78rem;border:1px solid var(--line);bord
 @media (max-width:820px){.show-ctl .wideonly{display:none}}
 .show-pill{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:61;width:40px;height:40px;border-radius:50%;
   border:1px solid rgba(255,255,255,.25);background:rgba(20,22,30,.55);color:#fff;font:600 18px Arial,sans-serif;cursor:pointer;opacity:.35;transition:opacity .2s}
-.show-pill:hover,.show-pill:focus-visible{opacity:1}
+.show-pill:hover,.show-pill:focus-visible,.show-pill[aria-expanded="true"]{opacity:1}
+.minibar{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(60px + env(safe-area-inset-bottom,0px));z-index:61;
+  display:flex;flex-direction:column;align-items:center;gap:5px;padding:7px;border-radius:14px;background:rgba(20,22,30,.78);box-shadow:0 6px 20px rgba(0,0,0,.35);
+  opacity:.55;transition:opacity .2s;max-height:calc(100vh - 80px);overflow-y:auto}
+.minibar:hover,.minibar:focus-within{opacity:1}
+.minibar button{width:36px;height:36px;padding:0;border-radius:9px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font:700 14px "Be Vietnam Pro",Arial,sans-serif;cursor:pointer}
+.minibar button:hover{background:rgba(255,255,255,.22)}
+.minibar button[aria-pressed="true"]{background:#fff;color:#111}
+.minibar .msep{width:22px;height:1px;background:rgba(255,255,255,.2)}
+.minibar .mpens{display:none;flex-direction:column;gap:4px}
+.minibar.penon .mpens{display:flex}
+.minibar .mpens button{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.35)}
+.minibar .mpens button.cur{border-color:#fff}
+.minibar [data-act="undo"],.minibar [data-act="clear"]{display:none}
+.minibar.penon [data-act="undo"],.minibar.penon [data-act="clear"]{display:inline-block}
+@media (prefers-reduced-motion:reduce){.minibar{transition:none}}
 @media (prefers-reduced-motion:reduce){.sl-prog,.show-ctl,.timer.end{transition:none;animation:none}}
 </style>
 
 <div class="wrap">
   <header>
-    <h1>Bục Giảng Công Thức<small>Trình chiếu bài dạy Toán 16:9 — công thức, ví dụ minh hoạ có lời giải từng bước, thực hành kiểu đề THPT</small></h1>
+    <h1>Bục Giảng Công Thức<small>Trình chiếu bài dạy Toán 16:9 — công thức, ví dụ có lời giải từng bước, luyện tập củng cố theo chủ đề, tự động chạy</small></h1>
     <div class="flow"><span class="kb"><i style="background:var(--k-ct)"></i>Công thức</span><span class="kb"><i style="background:var(--k-vd)"></i>Ví dụ</span><span class="kb"><i style="background:var(--k-th)"></i>Thực hành</span></div>
   </header>
 
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="lesson">Bài giảng</button>
-    <button role="tab" aria-selected="false" data-tab="prompt">Prompt cho AI</button>
     <button role="tab" aria-selected="false" data-tab="spec">Cú pháp & phím tắt</button>
   </div>
 
   <section id="tab-lesson">
+    <details class="aibox" id="aiBox">
+      <summary><span class="ai-k">Bước 1</span> Tạo bài bằng AI — chọn bài, sao chép prompt, dán vào ChatGPT / Gemini / Claude <span class="ai-hint">bấm để mở / đóng</span></summary>
+      <div class="ai-body">
+        <div class="form">
+          <label>Loại bài<select id="pKind"><option value="giang">Bài giảng mới</option><option value="luyentap">Luyện tập củng cố</option></select></label>
+          <label class="wide2">Bài học / chủ đề<input id="pLesson" value="Phương trình lượng giác cơ bản"></label>
+          <label>Lớp<select id="pGrade"><option>Lớp 10</option><option selected>Lớp 11</option><option>Lớp 12</option><option>Lớp 9</option></select></label>
+          <label>Bộ sách<input id="pBook" value="Kết nối tri thức với cuộc sống"></label>
+          <label>Số ví dụ<select id="pVD"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+          <label>Câu trắc nghiệm<select id="pTN"><option>2</option><option selected>3</option><option>4</option><option>6</option><option>8</option><option>10</option></select></label>
+          <label>Câu đúng/sai<select id="pDS"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></label>
+          <label>Câu trả lời ngắn<select id="pTL"><option>0</option><option selected>1</option><option>2</option><option>3</option><option>4</option></select></label>
+        </div>
+        <div class="presets" aria-label="Chọn nhanh">
+          <span>Chọn nhanh:</span>
+          <button type="button" data-p="giang">Bài giảng mới (3 VD · 5 câu)</button>
+          <button type="button" data-p="luyentap">Tiết luyện tập (2 VD · 12 câu)</button>
+          <button type="button" data-p="ontap">Ôn kiểm tra (1 VD · 15 câu)</button>
+        </div>
+        <div class="row ai-acts">
+          <button class="primary" id="cpPrompt">① Sao chép prompt</button>
+          <a class="lnk" href="https://claude.ai/new" target="_blank" rel="noopener">Mở Claude ↗</a>
+          <a class="lnk" href="https://chatgpt.com/" target="_blank" rel="noopener">Mở ChatGPT ↗</a>
+          <a class="lnk" href="https://gemini.google.com/app" target="_blank" rel="noopener">Mở Gemini ↗</a>
+          <button id="btnPasteAI">② Dán kết quả AI vào ô nội dung</button>
+          <button type="button" id="btnShowPrompt" aria-expanded="false">Xem prompt</button>
+        </div>
+        <pre class="code" id="prompt" hidden></pre>
+        <p class="hint">Kết quả AI có thể còn dấu <code>```markdown</code> ở đầu và cuối — ứng dụng tự bỏ đi. Sau khi dán, kiểm tra thông báo bên dưới ô nội dung rồi bấm ▶ Trình chiếu.</p>
+      </div>
+    </details>
     <div class="cols">
       <div class="pane">
         <div class="pane-head">
           <h2>Nội dung bài (.md)</h2>
           <div class="row">
             <button id="btnSample">Mẫu: PT lượng giác cơ bản</button>
+            <button id="btnSample2">Mẫu: Ôn tập GK1 Toán 11</button>
             <label class="filebtn">Mở file…<input id="fileIn" type="file" accept=".md,.json,.txt"></label>
             <button id="btnClear">Xoá</button>
           </div>
         </div>
         <textarea id="src" spellcheck="false" aria-label="Nội dung bài giảng"></textarea>
-        <div class="row"><button class="primary big" id="btnPlay">▶ Trình chiếu từ đầu</button><button id="btnCheck">Kiểm tra</button></div>
+        <div class="row"><button class="primary big" id="btnPlay">▶ Trình chiếu</button><button class="auto big" id="btnAuto">⏵ Chiếu tự động</button><button id="btnCheck">Kiểm tra</button></div>
         <div class="msgs" id="msgs" aria-live="polite"></div>
       </div>
       <div class="pane">
+        <div class="modebar">
+          <h3>Chọn bài để chiếu</h3>
+          <label>Chủ đề<select id="mTopic"><option value="-1">Tất cả</option></select></label>
+          <label>Kiểu bài<select id="mMode"><option value="full">Bài giảng đầy đủ</option><option value="luyentap">Luyện tập củng cố</option><option value="thuchanh">Chỉ câu luyện tập</option></select></label>
+          <label class="chk"><input type="checkbox" id="mVD"> Kèm ví dụ mẫu</label>
+          <label class="chk"><input type="checkbox" id="mShuffle"> Đảo thứ tự câu</label>
+        </div>
         <div class="pane-head"><h2>Dàn slide — bấm để chiếu từ slide đó</h2></div>
         <div class="stats" id="stats"></div>
         <div class="outline" id="outline"></div>
@@ -241,23 +336,27 @@ kbd{font-family:var(--f-code);font-size:.78rem;border:1px solid var(--line);bord
           <label>Ví dụ: hiện lời giải<select id="optStep"><option value="step">Từng bước</option><option value="all">Hiện hết khi bấm</option></select></label>
           <label>Giờ mặc định câu thực hành<select id="optTime"><option value="0">Không</option><option value="60">1 phút</option><option value="120" selected>2 phút</option><option value="180">3 phút</option><option value="300">5 phút</option></select></label>
         </div>
+        <div class="settings phbox">
+          <h3>In phiếu làm bài có dòng kẻ (theo chủ đề đang chọn)</h3>
+          <label>Số dòng kẻ mỗi câu<select id="phDong"><option>0</option><option>1</option><option selected>2</option><option>3</option><option>4</option><option>6</option></select></label>
+          <label>Kiểu dòng<select id="phKieu"><option value="cham">Dòng chấm</option><option value="lien">Dòng liền mờ</option></select></label>
+          <label>Tên trường (đầu phiếu)<input id="phSchool" placeholder="THPT Nguyễn Hữu Cảnh"></label>
+          <label class="chk"><input type="checkbox" id="phVD" checked> Ví dụ thành bài tự luận</label>
+          <label class="chk"><input type="checkbox" id="phCT"> Kèm nhắc lại công thức</label>
+          <label class="chk"><input type="checkbox" id="phKey" checked> Trang đáp án ở cuối</label>
+          <label class="chk" style="grid-column:1/-1"><input type="checkbox" id="phEco"> <span><b>Siêu tiết kiệm</b> — 2 cột, chữ nhỏ, lề hẹp, các chủ đề in nối tiếp, đáp án gọn trên trang riêng</span></label>
+          <div class="acts" style="grid-column:1/-1"><button class="primary" id="btnPhieu">🖨 In phiếu làm bài (PDF)</button></div>
+        </div>
+        <div class="settings">
+          <h3>Chiếu tự động</h3>
+          <label>Tốc độ chuyển slide<select id="optSpeed"><option value="1.5">Chậm</option><option value="1" selected>Vừa</option><option value="0.65">Nhanh</option></select></label>
+          <label>Thời gian suy nghĩ mỗi câu<select id="optThink"><option value="q" selected>Theo từng câu</option><option value="15">15 giây</option><option value="30">30 giây</option><option value="60">1 phút</option><option value="90">1 phút 30</option></select></label>
+          <label class="chk"><input type="checkbox" id="optLoop"> Hết bài thì chiếu lại từ đầu</label>
+        </div>
       </div>
     </div>
   </section>
 
-  <section id="tab-prompt" hidden>
-    <div class="form">
-      <label>Bài học<input id="pLesson" value="Phương trình lượng giác cơ bản"></label>
-      <label>Lớp<select id="pGrade"><option>Lớp 10</option><option selected>Lớp 11</option><option>Lớp 12</option><option>Lớp 9</option></select></label>
-      <label>Bộ sách<input id="pBook" value="Kết nối tri thức với cuộc sống"></label>
-      <label>Số ví dụ<select id="pVD"><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
-      <label>Câu trắc nghiệm<select id="pTN"><option>2</option><option selected>3</option><option>4</option><option>6</option></select></label>
-      <label>Câu đúng/sai<select id="pDS"><option>0</option><option selected>1</option><option>2</option></select></label>
-      <label>Câu trả lời ngắn<select id="pTL"><option>0</option><option selected>1</option><option>2</option></select></label>
-    </div>
-    <div class="row" style="justify-content:space-between;margin-bottom:8px"><p class="hint">Dán kết quả AI trả về vào tab Bài giảng rồi bấm Kiểm tra.</p><button class="primary" id="cpPrompt">Sao chép prompt</button></div>
-    <pre class="code" id="prompt"></pre>
-  </section>
 
   <section id="tab-spec" hidden>
     <div class="spec-wrap"><table class="spec">
@@ -299,13 +398,14 @@ Nghiệm dương nhỏ nhất ... bằng bao nhiêu độ?
 </div>
 
 <div id="show" hidden tabindex="-1" role="dialog" aria-label="Trình chiếu bài giảng">
-  <div class="stage" id="stage"><div id="slideHost"></div><canvas id="ink"></canvas><div id="layer"></div></div>
+  <div class="stage" id="stage"><div id="slideHost"></div><div class="auto-bar" id="autoBar"><i></i></div><canvas id="ink"></canvas><div id="layer"></div></div>
 </div>
 <div class="show-ctl" id="ctl" hidden>
   <button type="button" id="cPrev" aria-label="Lùi">◀</button>
   <span class="cnt" id="cCnt">1 / 1</span>
   <button type="button" id="cNext" aria-label="Tiếp">▶</button>
   <button type="button" id="cOv" title="Tổng quan các slide (O)">☷ Slide</button>
+  <button type="button" id="cAuto" aria-pressed="false" title="Tự động chạy (A)">⏵ Tự động</button>
   <span class="sep"></span>
   <span class="sw" id="cThemes" aria-label="Kiểu màu"></span>
   <span class="sep wideonly"></span>
@@ -321,10 +421,30 @@ Nghiệm dương nhỏ nhất ... bằng bao nhiêu độ?
   <button type="button" id="cHelp" class="wideonly" title="Phím tắt (?)">?</button>
   <span class="sep"></span>
   <button type="button" id="cHide" title="Thu gọn menu (H)" aria-label="Thu gọn menu">▾ Ẩn</button>
+  <button type="button" id="cFit" title="Lấp đầy màn hình / giữ khung 16:9 (L)">▣ Lấp đầy</button>
   <button type="button" id="cFull" class="wideonly" title="Toàn màn hình (F)" aria-label="Toàn màn hình">⛶</button>
   <button type="button" id="cExit" title="Thoát (Esc)" aria-label="Thoát">✕</button>
 </div>
-<button type="button" class="show-pill" id="pill" hidden title="Hiện menu (H)" aria-label="Hiện menu trình chiếu">☰</button>
+<button type="button" class="show-pill" id="pill" hidden title="Công cụ dạy học" aria-label="Mở công cụ dạy học" aria-expanded="false">✎</button>
+<div class="minibar" id="mini" hidden role="toolbar" aria-label="Công cụ dạy học">
+  <button type="button" data-act="prev" title="Lùi (←)" aria-label="Lùi">◀</button>
+  <button type="button" data-act="next" title="Tiếp (→)" aria-label="Tiếp">▶</button>
+  <span class="msep"></span>
+  <button type="button" data-act="pen" title="Bút vẽ (P)" aria-label="Bút vẽ" aria-pressed="false">✎</button>
+  <span class="mpens" id="miniPens"></span>
+  <button type="button" data-act="undo" title="Xoá nét cuối (Z)" aria-label="Xoá nét cuối">↶</button>
+  <button type="button" data-act="clear" title="Xoá hết nét (X)" aria-label="Xoá hết nét">⌫</button>
+  <span class="msep"></span>
+  <button type="button" data-act="answer" title="Hiện đáp án (D)" aria-label="Hiện đáp án">Đ/A</button>
+  <button type="button" data-act="timer" title="Đồng hồ (G)" aria-label="Đồng hồ">⏱</button>
+  <button type="button" data-act="pick" title="Gọi học sinh (R)" aria-label="Gọi học sinh">HS</button>
+  <button type="button" data-act="auto" title="Tự động chạy (A)" aria-label="Tự động chạy" aria-pressed="false">⏵</button>
+  <button type="button" data-act="ov" title="Tổng quan (O)" aria-label="Tổng quan">☷</button>
+  <button type="button" data-act="black" title="Màn đen (.)" aria-label="Màn đen">■</button>
+  <span class="msep"></span>
+  <button type="button" data-act="menu" title="Hiện menu đầy đủ (H)" aria-label="Hiện menu đầy đủ">☰</button>
+</div>
+<div id="phHost" aria-hidden="true" style="position:absolute;left:-10000px;top:0;width:182mm;font-family:'Noto Serif',serif;font-size:11.5pt"></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script type="text/plain" id="sample"># Phương trình lượng giác cơ bản
@@ -399,6 +519,445 @@ Nghiệm dương nhỏ nhất của phương trình $\tan\left(x + \frac{\pi}{4}
 ## Ghi nhớ {note}
 - Đưa vế phải về dạng $\sin\alpha$, $\cos\alpha$, $\tan\alpha$ với góc đặc biệt.
 - Luôn ghi $k \in \mathbb{Z}$ và đặt điều kiện với $\tan$, $\cot$.
+</script>
+
+<script type="text/plain" id="sample2">@tên bộ: Ôn tập giữa kì I – Toán 11
+@khổ: a4
+@cột: 2
+@mục lục: có
+@thông tin: Toán 11 KNTT – Ôn tập giữa kì I
+
+# Chủ đề 1. Góc lượng giác – Công thức lượng giác
+
+## 1. Góc lượng giác {do}
+1. $180^\circ = \pi$ rad; $1^\circ = \frac{\pi}{180}$ rad
+2. Độ dài cung: $l = R\alpha$ ($\alpha$ tính bằng rad)
+3. Các góc cùng tia đầu, tia cuối có số đo $\alpha + k2\pi$ ($k \in \mathbb{Z}$)
+! Đề cho **đường kính** thì phải lấy bán kính $R = \frac{d}{2}$.
+
+## 2. Giá trị lượng giác {cam}
+1. $\sin^2\alpha + \cos^2\alpha = 1$
+2. $1 + \tan^2\alpha = \frac{1}{\cos^2\alpha}$, $1 + \cot^2\alpha = \frac{1}{\sin^2\alpha}$
+3. $\tan\alpha \cdot \cot\alpha = 1$
+4. $\sin^2\alpha = \frac{\tan^2\alpha}{1 + \tan^2\alpha}$
+! Dấu: góc phần tư I tất cả dương; II chỉ $\sin$ dương; III $\tan, \cot$ dương; IV chỉ $\cos$ dương.
+
+## 3. Công thức lượng giác {xanhduong}
+1. $\sin 2a = 2\sin a\cos a$
+2. $\cos 2a = \cos^2 a - \sin^2 a = 2\cos^2 a - 1 = 1 - 2\sin^2 a$
+3. $\sin^2 a = \frac{1 - \cos 2a}{2}$, $\cos^2 a = \frac{1 + \cos 2a}{2}$
+4. $\sin(a \pm b) = \sin a\cos b \pm \cos a\sin b$
+5. $\cos(a \pm b) = \cos a\cos b \mp \sin a\sin b$
+
+## Ví dụ 1 {vidu}
+Trên đường tròn bán kính 10 cm, tính độ dài cung có số đo $2{,}5$ rad và cung có số đo $45^\circ$.
+>> Cung $2{,}5$ rad: $l = R\alpha = 10 \cdot 2{,}5 = 25$ cm.
+>> Đổi $45^\circ = \frac{\pi}{4}$ rad.
+>> $l = 10 \cdot \frac{\pi}{4} = \frac{5\pi}{2} \approx 7{,}85$ cm.
+=> $25$ cm và $\frac{5\pi}{2} \approx 7{,}85$ cm
+
+## Ví dụ 2 {vidu}
+Cho $\tan\alpha = 2$ và $\pi < \alpha < \frac{3\pi}{2}$. Tính $\sin^2\alpha$, $\cos\alpha$, $\sin\alpha$.
+>> $1 + \tan^2\alpha = 5 = \frac{1}{\cos^2\alpha} \Rightarrow \cos^2\alpha = \frac{1}{5}$, $\sin^2\alpha = \frac{4}{5}$.
+>> $\alpha$ thuộc góc phần tư III nên $\cos\alpha < 0$, $\sin\alpha < 0$.
+=> $\sin^2\alpha = \frac{4}{5},\ \cos\alpha = -\frac{1}{\sqrt{5}},\ \sin\alpha = -\frac{2}{\sqrt{5}}$
+
+## Ví dụ 3 {vidu}
+Guồng nước bán kính 3 m, tâm $O$ cách mặt nước 3 m, quay ngược chiều kim đồng hồ đều đặn mỗi vòng 60 giây. Lúc $t = 0$, điểm $M$ ở vị trí $A$ ngang tâm, bên phải. Sau bao lâu $M$ lên cao nhất lần đầu?
+>> Sau $t$ giây, $M$ quay được góc $\alpha = \frac{2\pi t}{60} = \frac{\pi t}{30}$ (rad).
+>> Độ cao so với mặt nước: $h = 3 + 3\sin\frac{\pi t}{30}$.
+>> Cao nhất khi $\sin\frac{\pi t}{30} = 1 \iff \frac{\pi t}{30} = \frac{\pi}{2}$.
+=> $t = 15$ giây, khi đó $h = 6$ m
+
+## Thực hành 1 {thuchanh, 1 phút}
+Trên đường tròn **đường kính** 10 cm, độ dài cung có số đo $1{,}2$ rad là
+*A. $6$ cm
+B. $12$ cm
+C. $3$ cm
+D. $4{,}17$ cm
+>> $R = 5$ cm nên $l = 5 \cdot 1{,}2 = 6$ cm.
+
+## Thực hành 2 {thuchanh, 2 phút}
+Nếu $\tan\alpha = \frac{2}{3}$ thì $\sin^2\alpha$ bằng
+*A. $\frac{4}{13}$
+B. $\frac{9}{13}$
+C. $\frac{13}{4}$
+D. $\frac{4}{9}$
+>> $\sin^2\alpha = \frac{\tan^2\alpha}{1 + \tan^2\alpha} = \frac{4/9}{13/9} = \frac{4}{13}$.
+
+## Thực hành 3 {thuchanh, 2 phút}
+Cho $\sin\alpha = \frac{1}{3}$. Giá trị của $\cos 2\alpha$ là
+*A. $\frac{7}{9}$
+B. $\frac{1}{9}$
+C. $-\frac{7}{9}$
+D. $\frac{2}{3}$
+>> $\cos 2\alpha = 1 - 2\sin^2\alpha = 1 - \frac{2}{9} = \frac{7}{9}$.
+
+## Thực hành 4 {thuchanh, 4 phút}
+Cho $\cos\alpha = -\frac{3}{5}$ với $\frac{\pi}{2} < \alpha < \pi$.
+a) $\sin\alpha > 0$. {Đ}
+b) $\sin\alpha = \frac{4}{5}$. {Đ}
+c) $\tan\alpha = \frac{4}{3}$. {S}
+d) $\sin 2\alpha = -\frac{24}{25}$. {Đ}
+>> Góc phần tư II: $\sin\alpha = \frac{4}{5}$, $\tan\alpha = -\frac{4}{3}$, $\sin 2\alpha = 2 \cdot \frac{4}{5} \cdot \left(-\frac{3}{5}\right) = -\frac{24}{25}$.
+
+## Thực hành 5 {thuchanh, 3 phút}
+Guồng nước bán kính 5 m quay ngược chiều kim đồng hồ, mỗi vòng 48 giây. Lúc $t = 0$ điểm $M$ ở vị trí $A$ ngang tâm, bên phải. Sau bao nhiêu giây thì $M$ lên vị trí cao nhất lần đầu?
+=> 12
+>> $M$ cao nhất khi quay được $\frac{1}{4}$ vòng: $\frac{48}{4} = 12$ giây.
+
+## Thực hành 6 {thuchanh, 2 phút}
+Bánh xe đạp bán kính 35 cm quay được góc 10 rad. Xe đi được quãng đường bao nhiêu mét?
+=> 3,5
+>> $l = R\alpha = 35 \cdot 10 = 350$ cm $= 3{,}5$ m.
+
+## Ghi nhớ {note}
+- Xác định **góc phần tư** trước rồi mới lấy dấu cho $\sin, \cos, \tan$.
+- $\sin x \cos x = \frac{1}{2}\sin 2x$ — dùng rất nhiều khi tìm giá trị lớn nhất, nhỏ nhất.
+
+# Chủ đề 2. Hàm số lượng giác
+
+## 1. Tập xác định {xanhreu}
+1. $y = \sin x,\ y = \cos x$: $D = \mathbb{R}$
+2. $y = \tan x$ xác định khi $x \neq \frac{\pi}{2} + k\pi$
+3. $y = \cot x$ xác định khi $x \neq k\pi$
+! Với $\tan u$, $\cot u$: đặt điều kiện cho cả biểu thức $u$ rồi mới tìm $x$.
+
+## 2. Chẵn lẻ – Chu kì {tim}
+1. $\sin x, \tan x, \cot x$ là hàm lẻ; $\cos x$ là hàm chẵn.
+2. $y = \sin(ax + b),\ y = \cos(ax + b)$: chu kì $T = \frac{2\pi}{|a|}$
+3. $y = \tan(ax + b),\ y = \cot(ax + b)$: chu kì $T = \frac{\pi}{|a|}$
+
+## 3. Tập giá trị – GTLN, GTNN {xanhla}
+1. $-1 \le \sin u \le 1$, $-1 \le \cos u \le 1$
+2. $y = a\sin u + b$: $b - |a| \le y \le b + |a|$
+3. $0 \le \sin^2 u \le 1$, $0 \le \cos^2 u \le 1$
+4. $\tan x, \cot x$ có tập giá trị $\mathbb{R}$
+
+## Ví dụ 1 {vidu}
+Tìm tập xác định của hàm số $y = \tan\left(2x - \frac{\pi}{4}\right)$.
+>> Điều kiện: $2x - \frac{\pi}{4} \neq \frac{\pi}{2} + k\pi$.
+>> $\iff 2x \neq \frac{3\pi}{4} + k\pi \iff x \neq \frac{3\pi}{8} + \frac{k\pi}{2}$.
+=> $D = \mathbb{R} \setminus \left\{\frac{3\pi}{8} + \frac{k\pi}{2} \mid k \in \mathbb{Z}\right\}$
+
+## Ví dụ 2 {vidu}
+Cho $f(x) = 3\sin\left(2x + \frac{\pi}{3}\right) - 1$. Tìm chu kì, tập giá trị và $f(0)$.
+>> Chu kì $T = \frac{2\pi}{2} = \pi$.
+>> $-1 \le \sin\left(2x + \frac{\pi}{3}\right) \le 1 \Rightarrow -4 \le f(x) \le 2$.
+>> $f(0) = 3\sin\frac{\pi}{3} - 1 = \frac{3\sqrt{3}}{2} - 1$.
+=> $T = \pi$, tập giá trị $[-4; 2]$, $f(0) = \frac{3\sqrt{3} - 2}{2}$
+
+## Ví dụ 3 {vidu}
+Cho $y = 6\sin x\cos x - 2$. Tìm $M + m$ ($M$, $m$ là GTLN, GTNN) và số giá trị nguyên của hàm số.
+>> $y = 3 \cdot 2\sin x\cos x - 2 = 3\sin 2x - 2$.
+>> $-1 \le \sin 2x \le 1 \Rightarrow -5 \le y \le 1$: $M = 1$, $m = -5$.
+>> Giá trị nguyên: $-5, -4, \ldots, 1$ gồm 7 số.
+=> $M + m = -4$; có 7 giá trị nguyên
+
+## Thực hành 1 {thuchanh, 1 phút}
+Hàm số $y = \tan 2x$ xác định khi
+*A. $x \neq \frac{\pi}{4} + \frac{k\pi}{2}$
+B. $x \neq \frac{\pi}{2} + k\pi$
+C. $x \neq \frac{\pi}{4} + k\pi$
+D. $x \neq \frac{k\pi}{2}$
+>> $2x \neq \frac{\pi}{2} + k\pi \iff x \neq \frac{\pi}{4} + \frac{k\pi}{2}$.
+
+## Thực hành 2 {thuchanh, 1 phút}
+Chu kì của hàm số $y = \cos(3x - 1)$ là
+*A. $\frac{2\pi}{3}$
+B. $\frac{\pi}{3}$
+C. $3\pi$
+D. $6\pi$
+>> $T = \frac{2\pi}{3}$.
+
+## Thực hành 3 {thuchanh, 1 phút}
+Giá trị lớn nhất của hàm số $y = 2 - 3\cos x$ là
+*A. $5$
+B. $2$
+C. $-1$
+D. $3$
+>> Lớn nhất khi $\cos x = -1$: $y = 2 + 3 = 5$.
+
+## Thực hành 4 {thuchanh, 2 phút}
+Gọi $M, m$ là giá trị lớn nhất, nhỏ nhất của $y = 8\sin x\cos x + 3$. Giá trị $M + m$ là
+*A. $6$
+B. $8$
+C. $3$
+D. $7$
+>> $y = 4\sin 2x + 3 \in [-1; 7]$ nên $M + m = 6$.
+
+## Thực hành 5 {thuchanh, 4 phút}
+Cho hàm số $f(x) = 3\cos\left(2x - \frac{\pi}{3}\right) + 1$.
+a) Tập xác định của hàm số là $\mathbb{R}$. {Đ}
+b) Hàm số tuần hoàn với chu kì $\pi$. {Đ}
+c) Tập giá trị của hàm số là $[-3; 3]$. {S}
+d) $f(0) = \frac{5}{2}$. {Đ}
+>> Tập giá trị là $[-2; 4]$; $f(0) = 3\cos\left(-\frac{\pi}{3}\right) + 1 = \frac{3}{2} + 1 = \frac{5}{2}$.
+
+## Thực hành 6 {thuchanh, 3 phút}
+Hàm số $y = 7 - 6\sin 3x\cos 3x$ có tất cả bao nhiêu giá trị nguyên?
+=> 7
+>> $y = 7 - 3\sin 6x \in [4; 10]$: các số nguyên $4, 5, \ldots, 10$.
+
+## Thực hành 7 {thuchanh, 2 phút}
+Gọi $M, m$ là GTLN, GTNN của $y = 2\sin^2 x + 1$. Tính $M + m$.
+=> 4
+>> $0 \le \sin^2 x \le 1 \Rightarrow 1 \le y \le 3$, nên $M + m = 4$.
+
+## Ghi nhớ {note}
+- Có $\sin x\cos x$: đổi sang $\frac{1}{2}\sin 2x$; có $\sin^2 x$: dùng $0 \le \sin^2 x \le 1$.
+- Đếm giá trị nguyên trên $[a; b]$ ($a, b$ nguyên): có $b - a + 1$ số.
+
+# Chủ đề 3. Phương trình lượng giác cơ bản
+
+## 1. sin x = m, cos x = m {do}
+! Có nghiệm khi $|m| \le 1$.
+1. $\sin x = \sin\alpha \iff x = \alpha + k2\pi$ hoặc $x = \pi - \alpha + k2\pi$
+2. $\cos x = \cos\alpha \iff x = \pm\alpha + k2\pi$
+3. $\sin x = 0 \iff x = k\pi$; $\cos x = 0 \iff x = \frac{\pi}{2} + k\pi$
+
+## 2. tan x = m, cot x = m {xanhduong}
+1. $\tan x = \tan\alpha \iff x = \alpha + k\pi$
+2. $\cot x = \cot\alpha \iff x = \alpha + k\pi$
+3. $\tan\frac{\pi}{6} = \frac{\sqrt{3}}{3},\ \tan\frac{\pi}{4} = 1,\ \tan\frac{\pi}{3} = \sqrt{3}$
+
+## 3. Cách giải {cam}
+1. Đưa vế phải về giá trị lượng giác của góc đặc biệt.
+2. Với $u = ax + b$: giải theo $u$ rồi chia cả hai vế cho $a$ — chu kì $k2\pi$ thành $\frac{k2\pi}{a}$.
+3. Tìm nghiệm trong khoảng: cho $k$ chạy, giữ các nghiệm thuộc khoảng.
+
+## Ví dụ 1 {vidu}
+Giải phương trình $\tan\left(2x + \frac{\pi}{6}\right) = 1$.
+>> $1 = \tan\frac{\pi}{4}$ nên $2x + \frac{\pi}{6} = \frac{\pi}{4} + k\pi$.
+>> $2x = \frac{\pi}{12} + k\pi$.
+=> $x = \frac{\pi}{24} + \frac{k\pi}{2} \quad (k \in \mathbb{Z})$
+
+## Ví dụ 2 {vidu}
+Giải phương trình $2\cos x + \sqrt{3} = 0$.
+>> $\cos x = -\frac{\sqrt{3}}{2} = \cos\frac{5\pi}{6}$.
+=> $x = \pm\frac{5\pi}{6} + k2\pi \quad (k \in \mathbb{Z})$
+
+## Ví dụ 3 {vidu}
+Tìm số nghiệm của phương trình $\sin 2x = 0$ trên đoạn $[0; \pi]$.
+>> $\sin 2x = 0 \iff 2x = k\pi \iff x = \frac{k\pi}{2}$.
+>> $0 \le \frac{k\pi}{2} \le \pi \iff 0 \le k \le 2$: $k \in \{0; 1; 2\}$.
+=> 3 nghiệm: $0, \frac{\pi}{2}, \pi$
+
+## Thực hành 1 {thuchanh, 2 phút}
+Nghiệm của phương trình $\tan\left(3x + \frac{\pi}{4}\right) = 1$ là
+*A. $x = \frac{k\pi}{3}$
+B. $x = \frac{\pi}{12} + \frac{k\pi}{3}$
+C. $x = k\pi$
+D. $x = \frac{\pi}{4} + k\pi$
+>> $3x + \frac{\pi}{4} = \frac{\pi}{4} + k\pi \iff x = \frac{k\pi}{3}$.
+
+## Thực hành 2 {thuchanh, 1 phút}
+Nghiệm của phương trình $\cot x = \sqrt{3}$ là
+*A. $x = \frac{\pi}{6} + k\pi$
+B. $x = \frac{\pi}{3} + k\pi$
+C. $x = \frac{\pi}{6} + k2\pi$
+D. $x = \pm\frac{\pi}{6} + k2\pi$
+>> $\sqrt{3} = \cot\frac{\pi}{6}$.
+
+## Thực hành 3 {thuchanh, 2 phút}
+Nghiệm của phương trình $2\sin x - \sqrt{2} = 0$ là
+*A. $x = \frac{\pi}{4} + k2\pi,\ x = \frac{3\pi}{4} + k2\pi$
+B. $x = \pm\frac{\pi}{4} + k2\pi$
+C. $x = \frac{\pi}{4} + k\pi$
+D. $x = \frac{\pi}{4} + k2\pi,\ x = -\frac{\pi}{4} + k2\pi$
+>> $\sin x = \frac{\sqrt{2}}{2} = \sin\frac{\pi}{4}$.
+
+## Thực hành 4 {thuchanh, 4 phút}
+Cho phương trình $\cos\left(x + \frac{\pi}{3}\right) = \frac{1}{2}$.
+a) Phương trình tương đương $\cos\left(x + \frac{\pi}{3}\right) = \cos\frac{\pi}{3}$. {Đ}
+b) $x = 0$ là một nghiệm của phương trình. {Đ}
+c) Phương trình có họ nghiệm $x = \frac{2\pi}{3} + k2\pi$. {S}
+d) Trên khoảng $(0; 2\pi)$, phương trình có đúng 1 nghiệm. {Đ}
+>> $x + \frac{\pi}{3} = \pm\frac{\pi}{3} + k2\pi \iff x = k2\pi$ hoặc $x = -\frac{2\pi}{3} + k2\pi$; trên $(0; 2\pi)$ chỉ có $x = \frac{4\pi}{3}$.
+
+## Thực hành 5 {thuchanh, 3 phút}
+Phương trình $\sin x = \frac{1}{2}$ có bao nhiêu nghiệm trên đoạn $[0; 4\pi]$?
+=> 4
+>> Các nghiệm: $\frac{\pi}{6}, \frac{5\pi}{6}, \frac{13\pi}{6}, \frac{17\pi}{6}$.
+
+## Ghi nhớ {note}
+- Họ nghiệm của $\sin, \cos$ có $k2\pi$; của $\tan, \cot$ có $k\pi$.
+- Phương trình chứa $\tan, \cot$: nhớ đặt điều kiện xác định.
+
+# Chủ đề 4. Dãy số – Cấp số cộng – Cấp số nhân
+
+## 1. Dãy số {cam}
+1. Cho bởi số hạng tổng quát $u_n = f(n)$ hoặc truy hồi: $u_1$ và $u_{n+1}$ theo $u_n$.
+2. Dãy tăng: $u_{n+1} > u_n$; dãy giảm: $u_{n+1} < u_n$ với mọi $n$.
+
+## 2. Cấp số cộng {xanhduong}
+1. $u_{n+1} = u_n + d$ ($d$: công sai)
+2. $u_n = u_1 + (n - 1)d$
+3. $S_n = \frac{n(u_1 + u_n)}{2} = \frac{n[2u_1 + (n - 1)d]}{2}$
+4. $1 + 2 + \cdots + n = \frac{n(n + 1)}{2}$
+
+## 3. Cấp số nhân {xanhla}
+1. $u_{n+1} = u_n \cdot q$ ($q$: công bội)
+2. $u_n = u_1 q^{n - 1}$
+3. $S_n = \frac{u_1(1 - q^n)}{1 - q} \quad (q \neq 1)$
+4. Giá trị $A$ giảm $r\%$ mỗi năm, sau $n$ năm còn $A(1 - r)^n$.
+
+## Ví dụ 1 {vidu}
+Cho dãy số $u_1 = 2$, $u_{n+1} = 2u_n - 1$. Tìm ba số hạng đầu.
+>> $u_2 = 2 \cdot 2 - 1 = 3$.
+>> $u_3 = 2 \cdot 3 - 1 = 5$.
+=> $2;\ 3;\ 5$
+
+## Ví dụ 2 {vidu}
+Cầu thang có các bậc hình chữ nhật cùng chiều rộng 30 cm; bậc đầu dài 250 cm, mỗi bậc sau ngắn hơn bậc trước 10 cm, bậc cuối dài 50 cm. Gỗ lát giá 1,5 triệu đồng/m². Tính số bậc và tiền gỗ.
+>> Chiều dài các bậc là cấp số cộng $u_1 = 250$, $d = -10$.
+>> $250 - 10(n - 1) = 50 \iff n = 21$ bậc.
+>> Tổng chiều dài: $S_{21} = \frac{21(250 + 50)}{2} = 3150$ cm.
+>> Diện tích: $3150 \cdot 30 = 94\,500\ \text{cm}^2 = 9{,}45\ \text{m}^2$.
+=> 21 bậc; tiền gỗ $9{,}45 \cdot 1{,}5 = 14{,}175$ triệu đồng
+
+## Ví dụ 3 {vidu}
+Một máy giá 2 tỉ đồng, mỗi năm giá trị giảm 15% so với năm trước. Tính giá trị sau 4 năm (làm tròn đến hàng phần trăm).
+>> Giá trị sau mỗi năm là cấp số nhân công bội $q = 1 - 0{,}15 = 0{,}85$.
+>> Sau 4 năm: $2 \cdot 0{,}85^4$.
+=> $\approx 1{,}04$ tỉ đồng
+
+## Thực hành 1 {thuchanh, 1 phút}
+Cho dãy số $u_1 = 2$, $u_{n+1} = u_n + 4$. Ba số hạng đầu là
+*A. $2;\ 6;\ 10$
+B. $4;\ 8;\ 12$
+C. $2;\ 8;\ 14$
+D. $2;\ 6;\ 12$
+>> $u_2 = 6$, $u_3 = 10$.
+
+## Thực hành 2 {thuchanh, 1 phút}
+Dãy số $(u_n)$ là cấp số nhân khi có số $q$ không đổi sao cho
+*A. $u_{n+1} = u_n \cdot q$
+B. $u_{n+1} = u_n + q$
+C. $u_{n+1} = u_n - q$
+D. $u_{n+1} = q^n$
+>> Định nghĩa cấp số nhân.
+
+## Thực hành 3 {thuchanh, 1 phút}
+Cấp số cộng có $u_1 = 3$, $d = 4$. Số hạng $u_{10}$ là
+*A. $39$
+B. $43$
+C. $40$
+D. $35$
+>> $u_{10} = 3 + 9 \cdot 4 = 39$.
+
+## Thực hành 4 {thuchanh, 1 phút}
+Cấp số nhân có $u_1 = 2$, $q = 3$. Số hạng $u_5$ là
+*A. $162$
+B. $486$
+C. $54$
+D. $30$
+>> $u_5 = 2 \cdot 3^4 = 162$.
+
+## Thực hành 5 {thuchanh, 4 phút}
+Một hội trường có 20 hàng ghế, hàng thứ nhất có 12 ghế, mỗi hàng sau nhiều hơn hàng trước 3 ghế. Gọi $u_n$ là số ghế ở hàng thứ $n$.
+a) $u_2 = 15$. {Đ}
+b) Dãy $(u_n)$ là cấp số cộng có công sai $d = 3$. {Đ}
+c) Hàng thứ 20 có 72 ghế. {S}
+d) Tổng số ghế của hội trường nhiều hơn 800. {Đ}
+>> $u_{20} = 12 + 19 \cdot 3 = 69$; $S_{20} = \frac{20(12 + 69)}{2} = 810$.
+
+## Thực hành 6 {thuchanh, 3 phút}
+Một ô tô giá 800 triệu đồng, mỗi năm giá trị giảm 10% so với năm trước. Sau 3 năm, giá trị còn lại bao nhiêu triệu đồng (làm tròn đến hàng đơn vị)?
+=> 583
+>> $800 \cdot 0{,}9^3 = 583{,}2$ triệu đồng.
+
+## Thực hành 7 {thuchanh, 4 phút}
+Mỗi mặt tường hình tam giác được ốp gạch thành các hàng: hàng dưới cùng 25 viên, mỗi hàng phía trên ít hơn hàng ngay dưới 1 viên, hàng trên cùng 1 viên. Cần bao nhiêu viên gạch cho 4 mặt như vậy?
+=> 1300
+>> Một mặt: $1 + 2 + \cdots + 25 = \frac{25 \cdot 26}{2} = 325$ viên; bốn mặt: $1300$ viên.
+
+## Ghi nhớ {note}
+- Bài toán “mỗi lần tăng/giảm **thêm một lượng**”: cấp số cộng; “tăng/giảm **theo phần trăm**”: cấp số nhân.
+- Tìm số bậc, số hàng: giải phương trình $u_n = $ giá trị cuối để tìm $n$.
+
+# Chủ đề 5. Mẫu số liệu ghép nhóm
+
+## 1. Bảng tần số – Số trung bình {tim}
+1. Nhóm $[u_i; u_{i+1})$, tần số $n_i$, cỡ mẫu $n = n_1 + n_2 + \cdots + n_k$
+2. Giá trị đại diện: $x_i = \frac{u_i + u_{i+1}}{2}$
+3. $\bar{x} = \frac{n_1 x_1 + n_2 x_2 + \cdots + n_k x_k}{n}$
+
+## 2. Tứ phân vị {xanhreu}
+1. $Q_1 = u_m + \frac{\frac{n}{4} - C}{n_m}(u_{m+1} - u_m)$
+2. $Q_2 = u_m + \frac{\frac{n}{2} - C}{n_m}(u_{m+1} - u_m)$ (trung vị)
+3. $Q_3 = u_m + \frac{\frac{3n}{4} - C}{n_m}(u_{m+1} - u_m)$
+! Nhóm $m$ chứa $Q_1$ là nhóm đầu tiên có tần số tích luỹ $\ge \frac{n}{4}$; $C$ là tổng tần số các nhóm đứng trước.
+
+## 3. Mốt {cam}
+1. Nhóm chứa mốt là nhóm có tần số lớn nhất $n_m$.
+2. $M_o = u_m + \frac{n_m - n_{m-1}}{(n_m - n_{m-1}) + (n_m - n_{m+1})}(u_{m+1} - u_m)$
+
+## Ví dụ 1 {vidu}
+Cân nặng (kg) của 30 học sinh:
+$$\begin{array}{|c|c|c|c|c|c|}\hline \text{Cân nặng} & [40;45) & [45;50) & [50;55) & [55;60) & [60;65) \\ \hline \text{Số HS} & 4 & 7 & 10 & 6 & 3 \\ \hline\end{array}$$
+Tính cân nặng trung bình.
+>> Giá trị đại diện: $42{,}5;\ 47{,}5;\ 52{,}5;\ 57{,}5;\ 62{,}5$.
+>> Tổng: $4 \cdot 42{,}5 + 7 \cdot 47{,}5 + 10 \cdot 52{,}5 + 6 \cdot 57{,}5 + 3 \cdot 62{,}5 = 1560$.
+=> $\bar{x} = \frac{1560}{30} = 52$ kg
+
+## Ví dụ 2 {vidu}
+Với bảng cân nặng ở Ví dụ 1 ($n = 30$), tính $Q_1, Q_2, Q_3$.
+>> Tần số tích luỹ: $4;\ 11;\ 21;\ 27;\ 30$.
+>> $\frac{n}{4} = 7{,}5$ thuộc nhóm $[45;50)$: $Q_1 = 45 + \frac{7{,}5 - 4}{7} \cdot 5 = 47{,}5$.
+>> $\frac{n}{2} = 15$ thuộc nhóm $[50;55)$: $Q_2 = 50 + \frac{15 - 11}{10} \cdot 5 = 52$.
+>> $\frac{3n}{4} = 22{,}5$ thuộc nhóm $[55;60)$: $Q_3 = 55 + \frac{22{,}5 - 21}{6} \cdot 5 = 56{,}25$.
+=> $Q_1 = 47{,}5;\ Q_2 = 52;\ Q_3 = 56{,}25$
+
+## Ví dụ 3 {vidu}
+Tìm mốt của bảng cân nặng ở Ví dụ 1.
+>> Nhóm có tần số lớn nhất: $[50;55)$ với $n_m = 10$, nhóm trước $7$, nhóm sau $6$.
+>> $M_o = 50 + \frac{10 - 7}{(10 - 7) + (10 - 6)} \cdot 5 = 50 + \frac{15}{7}$.
+=> $M_o \approx 52{,}14$ kg
+
+## Thực hành 1 {thuchanh, 1 phút}
+Thời gian xem ti vi (phút) trong một ngày của một số học sinh:
+$$\begin{array}{|c|c|c|c|c|c|}\hline \text{Thời gian} & [0;20) & [20;40) & [40;60) & [60;80) & [80;100) \\ \hline \text{Số HS} & 5 & 9 & 12 & 10 & 4 \\ \hline\end{array}$$
+Số học sinh xem ti vi từ 60 phút đến dưới 80 phút là
+A. $12$
+*B. $10$
+C. $9$
+D. $4$
+>> Đọc cột $[60;80)$: 10 học sinh.
+
+## Thực hành 2 {thuchanh, 2 phút}
+Với bảng thời gian xem ti vi ở Thực hành 1, thời gian xem trung bình là
+*A. $49{,}5$ phút
+B. $50$ phút
+C. $48{,}5$ phút
+D. $51$ phút
+>> $\bar{x} = \frac{5 \cdot 10 + 9 \cdot 30 + 12 \cdot 50 + 10 \cdot 70 + 4 \cdot 90}{40} = \frac{1980}{40} = 49{,}5$.
+
+## Thực hành 3 {thuchanh, 1 phút}
+Giá trị đại diện của nhóm $[60; 80)$ là
+*A. $70$
+B. $60$
+C. $80$
+D. $20$
+>> $\frac{60 + 80}{2} = 70$.
+
+## Thực hành 4 {thuchanh, 5 phút}
+Đường kính (cm) của một số cây gỗ được cho trong bảng:
+$$\begin{array}{|c|c|c|c|c|c|}\hline \text{Đường kính} & [20;25) & [25;30) & [30;35) & [35;40) & [40;45) \\ \hline \text{Số cây} & 5 & 8 & 14 & 9 & 4 \\ \hline\end{array}$$
+a) Cỡ mẫu là $n = 40$. {Đ}
+b) Trung vị $Q_2 = 32{,}5$. {Đ}
+c) Tứ phân vị thứ nhất $Q_1 = 27{,}5$. {S}
+d) Tứ phân vị thứ ba $Q_3 \approx 36{,}67$ (làm tròn đến hàng phần trăm). {Đ}
+>> Tích luỹ $5; 13; 27; 36; 40$. $Q_1 = 25 + \frac{10 - 5}{8} \cdot 5 = 28{,}125$; $Q_2 = 30 + \frac{20 - 13}{14} \cdot 5 = 32{,}5$; $Q_3 = 35 + \frac{30 - 27}{9} \cdot 5 \approx 36{,}67$.
+
+## Thực hành 5 {thuchanh, 3 phút}
+Tìm mốt của bảng đường kính cây ở Thực hành 4 (làm tròn đến hàng phần trăm).
+=> 32,73
+>> Nhóm $[30;35)$: $M_o = 30 + \frac{14 - 8}{(14 - 8) + (14 - 9)} \cdot 5 = 30 + \frac{30}{11} \approx 32{,}73$.
+
+## Ghi nhớ {note}
+- Lập cột **tần số tích luỹ** trước khi tìm $Q_1, Q_2, Q_3$.
+- $u_m$ là **đầu mút trái** của nhóm chứa tứ phân vị, $u_{m+1} - u_m$ là độ dài nhóm.
 </script>
 
 <script>
@@ -532,27 +1091,50 @@ function chunk(items){
   for(let i=0;i<out.length-1;i++){ const c=out[i]; if(c.length>1&&c[c.length-1].type==="heading") out[i+1].unshift(c.pop()); }
   return out.length?out:[[]];
 }
+function shuffled(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+const plainT=s=>String(s||"").replace(/\$([^$]*)\$/g,"$1").replace(/\*\*/g,"");
+function thTime(s){ return s.time!=null ? s.time : +$("optTime").value; }
+function ctSlides(S,sh,s,c,tag){ const parts=chunk(s.items); parts.forEach((items,pi)=>S.push({kind:"ct",topic:sh.title,title:s.title+(parts.length>1?` (${pi+1}/${parts.length})`:""),items,c,tag})); }
 function buildSlides(doc){
-  const S=[], multi=doc.sheets.length>1;
-  if(multi) S.push({kind:"cover",kicker:"Bộ bài giảng",title:doc.set_title||"Bài giảng",chips:doc.sheets.map((s,i)=>({t:s.title,c:PALETTE[CYCLE[i%CYCLE.length]]})),c:"#5B2C83"});
-  doc.sheets.forEach((sh,si)=>{
-    let idx=0, vd=0, th=0;
+  const mode=$("mMode").value, ti=+$("mTopic").value, withVD=$("mVD").checked, mix=$("mShuffle").checked;
+  const sheets= ti>=0 && doc.sheets[ti] ? [doc.sheets[ti]] : doc.sheets;
+  const S=[], multi=sheets.length>1, LT=mode!=="full";
+  if(multi) S.push({kind:"cover",kicker:LT?"Luyện tập củng cố":"Bộ bài giảng",title:doc.set_title||(LT?"Luyện tập":"Bài giảng"),chips:sheets.map((s,i)=>({t:s.title,c:PALETTE[CYCLE[i%CYCLE.length]]})),c:"#5B2C83"});
+  sheets.forEach(sh=>{
+    const si=doc.sheets.indexOf(sh);
+    let idx=0;
     const secs=sh.sections.map(s=>{ let c; if(s.kind==="ghichu") c="#555555"; else if(s.kind!=="ct") c=normColor(s.color)||KIND_COLOR[s.kind]; else { c=normColor(s.color)||PALETTE[CYCLE[idx%CYCLE.length]]; idx++; } return {s,c}; });
-    const cnt={ct:0,vidu:0,thuchanh:0}; sh.sections.forEach(s=>{ if(cnt[s.kind]!=null) cnt[s.kind]++; });
-    S.push({kind:"cover",kicker:multi?`Chủ đề ${si+1}`:"Bài giảng",title:sh.title||"Bài giảng",
-      chips:secs.filter(x=>x.s.kind==="ct").map(x=>({t:x.s.title,c:x.c})),
-      meta:[cnt.ct&&`${cnt.ct} khối công thức`,cnt.vidu&&`${cnt.vidu} ví dụ`,cnt.thuchanh&&`${cnt.thuchanh} câu thực hành`].filter(Boolean).join("  ·  "),
-      c:secs[0]?secs[0].c:"#C0222E"});
-    secs.forEach(({s,c})=>{
-      if(s.kind==="vidu"){ vd++; S.push({kind:"vidu",topic:sh.title,title:s.title,sec:s,c}); }
-      else if(s.kind==="thuchanh"){ th++; S.push({kind:"thuchanh",topic:sh.title,title:s.title,sec:s,c,time:s.time!=null?s.time:+$("optTime").value}); }
-      else { const parts=chunk(s.items); parts.forEach((items,pi)=>S.push({kind:"ct",topic:sh.title,title:s.title+(parts.length>1?` (${pi+1}/${parts.length})`:""),items,c})); }
-    });
+    const of=k=>secs.filter(x=>x.s.kind===k);
+    const ct=of("ct"), vd=of("vidu"), gn=of("ghichu");
+    if(!LT){
+      S.push({kind:"cover",kicker:doc.sheets.length>1?`Chủ đề ${si+1}`:"Bài giảng",title:sh.title||"Bài giảng",
+        chips:ct.map(x=>({t:x.s.title,c:x.c})),
+        meta:[ct.length&&`${ct.length} khối công thức`,vd.length&&`${vd.length} ví dụ`,of("thuchanh").length&&`${of("thuchanh").length} câu thực hành`].filter(Boolean).join("  ·  "),
+        c:secs[0]?secs[0].c:"#C0222E"});
+      secs.forEach(({s,c})=>{
+        if(s.kind==="vidu") S.push({kind:"vidu",topic:sh.title,title:s.title,sec:s,c});
+        else if(s.kind==="thuchanh") S.push({kind:"thuchanh",topic:sh.title,title:s.title,sec:s,c,time:thTime(s)});
+        else ctSlides(S,sh,s,c,"");
+      });
+      return;
+    }
+    // ----- luyện tập củng cố / chỉ câu luyện tập -----
+    const th = mix ? shuffled(of("thuchanh")) : of("thuchanh");
+    const secsTotal=th.reduce((a,x)=>a+(thTime(x.s)||60),0);
+    S.push({kind:"cover",kicker:mode==="luyentap"?"Luyện tập củng cố":"Luyện tập",title:sh.title||"Luyện tập",
+      chips: mode==="luyentap" ? ct.map(x=>({t:x.s.title,c:x.c})) : [],
+      meta:[th.length&&`${th.length} câu luyện tập`,secsTotal&&`khoảng ${Math.max(1,Math.round(secsTotal/60))} phút`,mode==="luyentap"&&ct.length&&`nhắc lại ${ct.length} khối công thức`].filter(Boolean).join("  ·  "),
+      c:"#2E7D4F"});
+    if(mode==="luyentap"){ ct.forEach(({s,c})=>ctSlides(S,sh,s,c,"Nhắc lại")); if(withVD) vd.forEach(({s,c})=>S.push({kind:"vidu",topic:sh.title,title:s.title,sec:s,c})); }
+    const group=[];
+    th.forEach(({s,c},k)=>{ const sl={kind:"thuchanh",topic:sh.title,title:`Câu ${k+1} / ${th.length}`,sec:s,c,time:thTime(s),tag:"Luyện tập"}; S.push(sl); group.push(sl); });
+    if(mode==="luyentap") gn.forEach(({s,c})=>ctSlides(S,sh,s,c,""));
+    if(group.length) S.push({kind:"sum",topic:sh.title,title:"Tổng kết luyện tập",group,c:"#2E7D4F"});
   });
   return S;
 }
-const KLABEL={cover:"Bìa",ct:"Công thức",vidu:"Ví dụ",thuchanh:"Thực hành"};
-const KCOLOR={cover:"var(--k-bia)",ct:"var(--k-ct)",vidu:"var(--k-vd)",thuchanh:"var(--k-th)"};
+const KLABEL={cover:"Bìa",ct:"Công thức",vidu:"Ví dụ",thuchanh:"Thực hành",sum:"Tổng kết"};
+const KCOLOR={cover:"var(--k-bia)",ct:"var(--k-ct)",vidu:"var(--k-vd)",thuchanh:"var(--k-th)",sum:"var(--k-bia)"};
 
 /* ---------------- trạng thái trình chiếu ---------------- */
 const P={slides:[],i:0,step:0,opts:Object.assign({theme:"sang",bold:1,zoom:1,reveal:false,menuHidden:false},store.get("opts",{})),
@@ -568,7 +1150,16 @@ function slideHTML(sl){
   if(sl.kind==="cover") return `<div class="slide"><div class="sl-cover"><div class="k">${esc(sl.kicker)}</div><h2>${rich(sl.title)}</h2><div class="bar"></div>
     ${sl.chips.length?`<div class="chips">${sl.chips.map(x=>`<span style="--cc:${x.c}">${rich(x.t)}</span>`).join("")}</div>`:""}${sl.meta?`<div class="meta">${esc(sl.meta)}</div>`:""}</div></div>`;
   const band=(tag,extra="")=>`<div class="sl-band"><span>${tag?`<span class="tag">${tag}</span>`:""}${rich(sl.title)}</span>${extra||`<small>${rich(sl.topic||"")}</small>`}</div>`;
-  if(sl.kind==="ct") return `<div class="slide">${band("")}<div class="sl-body"><div class="sl-content" data-rows>${sl.items.map(itemHTML).join("")}</div></div></div>`;
+  if(sl.kind==="sum"){
+    const g=sl.group, tn=g.filter(x=>x.sec.options.length), graded=tn.filter(x=>x.res), ok=graded.filter(x=>x.res==="ok").length;
+    return `<div class="slide">${band("Tổng kết")}<div class="sl-body"><div class="sl-content sum">
+      <div class="sum-big">${graded.length?`${ok}<span>/ ${graded.length}</span>`:g.length}</div>
+      <div class="sum-sub">${graded.length?"câu trắc nghiệm lớp chọn đúng ngay lần đầu":`câu luyện tập đã hoàn thành`}</div>
+      <div class="sum-chips">${g.map((x,k)=>`<span class="sc ${x.res||""}">${k+1}<small>${x.res==="ok"?"✓":x.res==="bad"?"✗":"·"}</small></span>`).join("")}</div>
+      <div class="sum-sub">${tn.length&&!graded.length?"Mẹo: bấm vào phương án học sinh chọn ở mỗi câu trắc nghiệm để có thống kê ở đây.":"Xanh: đúng ngay lần đầu · Đỏ: chọn sai lần đầu"}</div>
+    </div></div></div>`;
+  }
+  if(sl.kind==="ct") return `<div class="slide">${band(sl.tag||"")}<div class="sl-body"><div class="sl-content" data-rows>${sl.items.map(itemHTML).join("")}</div></div></div>`;
   const s=sl.sec, q=s.items.length?`<div class="q-card">${s.items.map(itemHTML).join("")}</div>`:"";
   if(sl.kind==="vidu"){
     return `<div class="slide">${band("Ví dụ")}<div class="sl-body"><div class="sl-content">${q}
@@ -578,12 +1169,12 @@ function slideHTML(sl){
   // thực hành
   const tm=sl.time?`<button class="timer" data-timer>${fmt(sl.time)}</button>`:"";
   const longOpt=s.options.some(o=>o.text.replace(/\$[^$]*\$/g,"xxxxxxxx").length>34);
-  const opts=s.options.length?`<div class="opts${longOpt?" one":""}">${s.options.map(o=>`<button class="opt" data-ok="${o.ok?1:0}"><span class="L">${o.L}</span><span>${rich(o.text,true)}</span><span class="mk"></span></button>`).join("")}</div>`:"";
-  const tf=s.tf.length?`<div class="tf">${s.tf.map(o=>`<button class="tfrow ${o.val?"T":"F"}"><span class="lab">${o.L})</span><span>${rich(o.text)}</span><span class="v">?</span></button>`).join("")}</div>`:"";
+  const opts=s.options.length?`<div class="opts${longOpt?" one":""}">${s.options.map(o=>`<button class="opt" data-l="${o.L}" data-ok="${o.ok?1:0}"><span class="L">${o.L}</span><span>${rich(o.text,true)}</span><span class="mk"></span></button>`).join("")}</div>`:"";
+  const tf=s.tf.length?`<div class="tf">${s.tf.map(o=>`<button class="tfrow ${o.val?"T":"F"}" data-l="${o.L}"><span class="lab">${o.L})</span><span>${rich(o.text)}</span><span class="v">?</span></button>`).join("")}</div>`:"";
   const ansTxt = s.answer ? rich(s.answer,true)
     : s.options.length ? s.options.filter(o=>o.ok).map(o=>o.L).join(", ")
     : s.tf.length ? s.tf.map(o=>`${o.L}) ${o.val?"Đ":"S"}`).join("   ") : "";
-  return `<div class="slide">${band("Thực hành",`<small style="display:flex;gap:.6em;align-items:center;justify-content:flex-end">${rich(sl.topic||"")}${tm}</small>`)}
+  return `<div class="slide">${band(sl.tag||"Thực hành",`<small style="display:flex;gap:.6em;align-items:center;justify-content:flex-end">${rich(sl.topic||"")}${tm}</small>`)}
     <div class="sl-body"><div class="sl-content">${q}${opts}${tf}
       ${ansTxt?`<div class="ans" data-st="1"><span class="lb">Đáp án</span>${ansTxt}</div>`:""}
       ${s.steps.length?`<ol class="steps">${s.steps.map((t,k)=>`<li data-st="${k+2}"><span class="n-dot">${k+1}</span><span>${rich(t)}</span></li>`).join("")}</ol>`:""}
@@ -592,7 +1183,12 @@ function slideHTML(sl){
 }
 function applyStep(){
   const host=$("slideHost"), sl=P.slides[P.i], st=P.step;
+  autoArm();
   if(sl.kind==="ct"){ const rows=[...host.querySelectorAll("[data-rows]>div")]; rows.forEach((r,k)=>{ r.classList.toggle("later",P.opts.reveal&&k>=st); r.classList.toggle("now",P.opts.reveal&&k===st-1); }); return; }
+  if(sl.kind==="thuchanh"){
+    host.querySelectorAll(".opt").forEach(b=>{ if((sl.picked||[]).includes(b.dataset.l)){ b.dataset.clicked=1; const ok=b.dataset.ok==="1"; b.classList.add(ok?"ok":"bad"); b.querySelector(".mk").textContent=ok?"✓ Đúng":"✗ Sai"; } });
+    host.querySelectorAll(".tfrow").forEach(r=>{ if((sl.tfShown||[]).includes(r.dataset.l)){ r.dataset.clicked=1; reveal(r); } });
+  }
   host.querySelectorAll("[data-st]").forEach(el=>{ const k=+el.dataset.st; el.classList.toggle("later",k>st); el.classList.toggle("now",k===st&&el.tagName==="LI"); });
   if(sl.kind==="vidu" && $("optStep").value==="all") host.querySelectorAll("[data-st]").forEach(el=>{ el.classList.toggle("later",st<1); el.classList.remove("now"); });
   if(sl.kind==="thuchanh"){
@@ -619,7 +1215,7 @@ async function render(){
 function fit(){
   const body=$("slideHost").querySelector(".sl-body"), ct=$("slideHost").querySelector(".sl-content"); if(!body||!ct) return;
   const cs=getComputedStyle(body), room=body.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
-  let f=P.slides[P.i].kind==="ct"?1.7:1.35; ct.style.setProperty("--fit",f);
+  let f=P.slides[P.i].kind==="ct"?2.3:1.6; ct.style.setProperty("--fit",f);
   const wide=()=>[...ct.querySelectorAll("svg")].some(s=>s.getBoundingClientRect().width>=ct.clientWidth*0.97) && ct.getBoundingClientRect().width>body.clientWidth*0.9;
   while(f>0.42 && (ct.scrollHeight>room+1 || wide())){ f-=0.05; ct.style.setProperty("--fit",f); }
 }
@@ -646,7 +1242,54 @@ function toggleTimer(){
 }
 function syncTimerChip(){ const chip=$("slideHost").querySelector("[data-timer]"); if(!chip) return; const t=P.timers[P.i]; const sl=P.slides[P.i];
   chip.textContent= t? (t.end?"Hết giờ!":fmt(t.left)) : fmt(sl.time); chip.classList.toggle("run",!!(t&&t.run)); chip.classList.toggle("end",!!(t&&t.end)); }
-setInterval(()=>{ const now=performance.now(); Object.entries(P.timers).forEach(([i,t])=>{ if(!t.run) return; t.left-= (now-t.last)/1000; t.last=now; if(t.left<=0){ t.left=0; t.run=false; t.end=true; beep(); } }); syncTimerChip(); },250);
+setInterval(()=>{ const now=performance.now(), hold=A.on&&autoPaused(); Object.entries(P.timers).forEach(([i,t])=>{ if(!t.run) return; if(hold){ t.last=now; return; } t.left-= (now-t.last)/1000; t.last=now; if(t.left<=0){ t.left=0; t.run=false; t.end=true; beep(); } }); syncTimerChip(); },250);
+
+/* ---------------- tự động chạy ---------------- */
+const A={on:false,key:"",dur:1,left:0,last:0};
+function autoPaused(){ return P.pen || !!$("layer").dataset.kind || document.hidden; }
+function thinkTime(sl){ const v=$("optThink").value; return v==="q" ? (sl.time||60) : +v; }
+function autoDelay(){
+  const sl=P.slides[P.i], st=P.step, sp=+$("optSpeed").value||1;
+  const len=a=>a.join(" ").replace(/\$[^$]*\$/g,"xxxxxxxx").length;
+  if(sl.kind==="cover") return 6*sp;
+  if(sl.kind==="sum") return 10*sp;
+  if(sl.kind==="ct") return (P.opts.reveal ? 3.5 : Math.min(26, 4+1.8*sl.items.length))*sp;
+  if(sl.kind==="vidu") return (st===0 ? Math.min(15, 5+len(sl.sec.items.map(x=>x.text))/22) : st>sl.sec.steps.length ? 6 : 4.5)*sp;
+  if(sl.kind==="thuchanh") return st===0 ? thinkTime(sl) : (st===1 ? 6 : 5)*sp;
+  return 5*sp;
+}
+function autoArm(){
+  if(!A.on) return;
+  const key=P.i+":"+P.step; if(key===A.key) return; A.key=key;
+  const sec=autoDelay(); A.dur=sec*1000; A.left=A.dur; A.last=performance.now();
+  const sl=P.slides[P.i];
+  if(sl.kind==="thuchanh" && P.step===0 && sl.time){ const t=timerOf(P.i); t.left=sec; t.run=true; t.end=false; t.last=performance.now(); }
+  autoUI();
+}
+function autoNext(){
+  const sl=P.slides[P.i];
+  if(P.step<maxStep(sl) || P.i<P.slides.length-1){ go(1); return; }
+  if($("optLoop").checked){ jump(0); return; }
+  setAuto(false); toast("Đã chiếu hết bài.");
+}
+function setAuto(on){
+  A.on=on; A.key=""; $("cAuto").setAttribute("aria-pressed",on);
+  if(on){ try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); }catch{} autoArm(); toast("Tự động chạy — bấm A để dừng."); }
+  autoUI();
+}
+function autoUI(){
+  const bar=$("autoBar"); bar.classList.toggle("on",A.on); bar.classList.toggle("paused",A.on&&autoPaused());
+  bar.firstElementChild.style.width=A.on?Math.min(100,(1-A.left/A.dur)*100)+"%":"0";
+  $("cAuto").textContent=A.on?`⏸ Tự động ${Math.max(0,Math.ceil(A.left/1000))}s`:"⏵ Tự động";
+  const ma=$("mini").querySelector('[data-act="auto"]'); ma.setAttribute("aria-pressed",A.on); ma.textContent=A.on?Math.max(0,Math.ceil(A.left/1000)):"⏵";
+}
+setInterval(()=>{
+  if(!A.on||$("show").hidden) return;
+  const now=performance.now(), dt=now-A.last; A.last=now;
+  if(!autoPaused()) A.left-=dt;
+  autoUI();
+  if(A.left<=0) autoNext();
+},200);
 
 /* ---------------- bút vẽ ---------------- */
 const PENS=[{c:"#e53935",w:.004},{c:"#1e88e5",w:.004},{c:"#2e7d32",w:.004},{c:"#ffd600",w:.016,hl:true}];
@@ -663,7 +1306,9 @@ $("ink").addEventListener("pointerdown",e=>{ if(!P.pen) return; e.preventDefault
   drawing={c:pen.c,w:pen.w,hl:!!pen.hl,p:[[(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]]}; (P.ink[P.i]=P.ink[P.i]||[]).push(drawing); });
 $("ink").addEventListener("pointermove",e=>{ if(!drawing) return; const r=$("ink").getBoundingClientRect(); drawing.p.push([(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]); drawInk(); });
 ["pointerup","pointercancel"].forEach(ev=>$("ink").addEventListener(ev,()=>{ drawing=null; }));
-function setPen(on){ P.pen=on; $("stage").classList.toggle("pen",on); $("cPen").setAttribute("aria-pressed",on); $("ctl").classList.toggle("penon",on); }
+function setPen(on){ P.pen=on; $("stage").classList.toggle("pen",on); $("cPen").setAttribute("aria-pressed",on); $("ctl").classList.toggle("penon",on);
+  $("mini").classList.toggle("penon",on); $("mini").querySelector('[data-act="pen"]').setAttribute("aria-pressed",on);
+  $("miniPens").querySelectorAll("[data-c]").forEach(x=>x.classList.toggle("cur",x.dataset.c===P.penColor)); }
 function clearInk(){ P.ink[P.i]=[]; drawInk(); }
 $("penbar").innerHTML=PENS.map(p=>`<button type="button" class="pc" data-c="${p.c}" title="${p.hl?"Bút dạ quang":"Bút"}" style="width:22px;height:22px;padding:0;border-radius:50%;background:${p.c};border:2px solid rgba(255,255,255,.35)${p.hl?";opacity:.7":""}"></button>`).join("")+`<button type="button" id="cUndo" title="Xoá nét cuối (Z)">↶</button><button type="button" id="cClear" title="Xoá hết nét (X)">Xoá nét</button>`;
 $("penbar").addEventListener("click",e=>{ const b=e.target.closest("[data-c]"); if(b){ P.penColor=b.dataset.c; setPen(true); [...$("penbar").querySelectorAll("[data-c]")].forEach(x=>x.style.borderColor= x===b?"#fff":"rgba(255,255,255,.35)"); } });
@@ -683,24 +1328,34 @@ function pick(){
   $("layer").innerHTML=`<div class="pick"><div class="k">MỜI HỌC SINH SỐ</div><div class="num" id="pnum">–</div><div class="sub">Sĩ số ${N} · còn ${P.bag.length} số chưa gọi · bấm R gọi tiếp, Esc để đóng</div></div>`; $("layer").dataset.kind="pick";
   let k=0; const roll=setInterval(()=>{ $("pnum") && ($("pnum").textContent=1+Math.floor(Math.random()*N)); if(++k>14){ clearInterval(roll); $("pnum") && ($("pnum").textContent=num); } },55);
 }
-const KEYS=[["→ Space Enter","Tiếp / hiện bước tiếp theo"],["← Backspace","Lùi"],["Home / End","Slide đầu / cuối"],["O","Tổng quan, chọn slide"],["H","Thu gọn / hiện menu"],["F","Toàn màn hình"],
-  ["T","Đổi kiểu màu"],["B","Đổi độ đậm"],["+ / −","Chữ to / nhỏ"],["D","Hiện đáp án câu thực hành"],["G","Bật / dừng đồng hồ"],["R","Bốc thăm học sinh"],
+const KEYS=[["→ Space Enter","Tiếp / hiện bước tiếp theo"],["← Backspace","Lùi"],["Home / End","Slide đầu / cuối"],["O","Tổng quan, chọn slide"],["H","Thu gọn / hiện menu"],["F","Toàn màn hình"],["L","Lấp đầy màn hình / giữ khung 16:9"],
+  ["T","Đổi kiểu màu"],["B","Đổi độ đậm"],["+ / −","Chữ to / nhỏ"],["D","Hiện đáp án câu thực hành"],["G","Bật / dừng đồng hồ"],["A","Bật / tắt tự động chạy"],["R","Bốc thăm học sinh"],
   ["P","Bật / tắt bút vẽ"],["Z / X","Xoá nét cuối / xoá hết nét"],[".  /  W","Màn đen / màn trắng"],["?","Bảng phím tắt"],["Esc","Đóng lớp phủ / thoát"]];
 function help(){ layer("help",`<div class="help"><h3>Phím tắt</h3><div class="g">${KEYS.map(k=>`<div><kbd>${esc(k[0])}</kbd> ${esc(k[1])}</div>`).join("")}</div></div>`); }
 $("keysList").innerHTML=KEYS.map(k=>`<div><kbd>${esc(k[0])}</kbd> ${esc(k[1])}</div>`).join("");
 $("layer").addEventListener("click",e=>{ e.stopPropagation(); const b=e.target.closest("[data-j]"); if(b) jump(+b.dataset.j); else if(!e.target.closest(".help")) closeLayer(); });
 
 /* ---------------- điều khiển ---------------- */
-function openShow(at=0){
+function openShow(at=0,auto=false){
   if(!build()) return;
   if(!P.slides.length){ toast("Chưa có slide nào."); return; }
   P.i=Math.min(at,P.slides.length-1); P.step=(P.slides[P.i].kind==="ct"&&P.opts.reveal)?1:0; P.timers={}; closeLayer(); setPen(false);
   $("show").hidden=false; $("ctl").hidden=false; document.body.style.overflow="hidden";
-  syncCtl(); setMenu(!!P.opts.menuHidden); sizeInk(); render(); poke();
+  applyFit(); A.on=false; syncCtl(); setMenu(!!P.opts.menuHidden); sizeInk(); setAuto(auto); render(); poke();
   try{ $("show").focus(); }catch{}
 }
-function closeShow(){ $("show").hidden=true; $("ctl").hidden=true; $("pill").hidden=true; document.body.style.overflow=""; setPen(false); Object.values(P.timers).forEach(t=>t.run=false); if(document.fullscreenElement) document.exitFullscreen().catch(()=>{}); }
-function setMenu(hide){ $("ctl").classList.toggle("collapsed",hide); $("pill").hidden=!hide||$("show").hidden; P.opts.menuHidden=hide; saveOpts(); }
+function closeShow(){ setAuto(false); $("show").hidden=true; $("ctl").hidden=true; $("pill").hidden=true; document.body.style.overflow=""; setPen(false); Object.values(P.timers).forEach(t=>t.run=false); if(document.fullscreenElement) document.exitFullscreen().catch(()=>{}); }
+function setMenu(hide){ $("ctl").classList.toggle("collapsed",hide); $("pill").hidden=!hide||$("show").hidden; if(!hide||$("show").hidden) setMini(false); P.opts.menuHidden=hide; saveOpts(); }
+function setMini(open){ $("mini").hidden=!open; $("pill").setAttribute("aria-expanded",open); $("pill").textContent=open?"✕":"✎"; $("pill").title=open?"Đóng công cụ":"Công cụ dạy học"; }
+$("miniPens").innerHTML=PENS.map(p=>`<button type="button" data-c="${p.c}" title="${p.hl?"Bút dạ quang":"Màu bút"}" aria-label="${p.hl?"Bút dạ quang":"Màu bút"}" style="background:${p.c}${p.hl?";opacity:.75":""}"></button>`).join("");
+$("mini").addEventListener("click",e=>{
+  const c=e.target.closest("[data-c]"); if(c){ P.penColor=c.dataset.c; setPen(true); return; }
+  const b=e.target.closest("[data-act]"); if(!b) return;
+  const sl=P.slides[P.i];
+  ({prev:()=>go(-1), next:()=>go(1), pen:()=>setPen(!P.pen), undo:()=>{ (P.ink[P.i]||[]).pop(); drawInk(); }, clear:clearInk,
+    answer:()=>{ if(sl.kind==="thuchanh"||sl.kind==="vidu"){ P.step=maxStep(sl); applyStep(); } else toast("Slide này không có đáp án."); },
+    timer:toggleTimer, pick, auto:()=>setAuto(!A.on), ov:overview, black:()=>curtain("black"), menu:()=>setMenu(false)})[b.dataset.act]();
+});
 function syncCtl(){
   $("cThemes").innerHTML=THEMES.map(t=>`<button type="button" title="${t.name}" aria-label="${t.name}" aria-pressed="${t.id===P.opts.theme}" data-t="${t.id}" style="background:${t.dot}"></button>`).join("");
   $("cBold").value=String(P.opts.bold); $("cReveal").checked=!!P.opts.reveal;
@@ -710,16 +1365,19 @@ $("cThemes").addEventListener("click",e=>{ const b=e.target.closest("[data-t]");
 $("cBold").onchange=e=>{ P.opts.bold=+e.target.value; saveOpts(); render(); };
 $("cReveal").onchange=e=>{ P.opts.reveal=e.target.checked; saveOpts(); P.step=(P.slides[P.i].kind==="ct"&&P.opts.reveal)?1:P.step; render(); };
 $("cPrev").onclick=()=>go(-1); $("cNext").onclick=()=>go(1); $("cOv").onclick=overview;
+$("cAuto").onclick=()=>setAuto(!A.on);
 $("cSmall").onclick=()=>{ P.opts.zoom=Math.max(.7,+(P.opts.zoom-.1).toFixed(2)); saveOpts(); render(); };
 $("cBig").onclick=()=>{ P.opts.zoom=Math.min(1.6,+(P.opts.zoom+.1).toFixed(2)); saveOpts(); render(); };
 $("cPen").onclick=()=>setPen(!P.pen); $("cTimer").onclick=toggleTimer; $("cPick").onclick=pick; $("cHelp").onclick=help;
-$("cHide").onclick=()=>setMenu(true); $("pill").onclick=()=>setMenu(false);
+$("cHide").onclick=()=>setMenu(true); $("pill").onclick=()=>setMini($("mini").hidden);
 $("cExit").onclick=closeShow;
-$("cFull").onclick=()=>{ if(document.fullscreenElement) document.exitFullscreen().catch(()=>{}); else ($("show").requestFullscreen?$("show").requestFullscreen():Promise.reject()).catch(()=>toast("Trình duyệt không cho toàn màn hình ở đây — bấm F11.")); };
+$("cFull").onclick=()=>{ if(document.fullscreenElement) document.exitFullscreen().catch(()=>{}); else (document.documentElement.requestFullscreen?document.documentElement.requestFullscreen():Promise.reject()).catch(()=>toast("Trình duyệt không cho toàn màn hình ở đây — bấm F11.")); };
 $("stage").addEventListener("click",e=>{
   if(P.pen||$("layer").dataset.kind) return;
-  const opt=e.target.closest(".opt"); if(opt){ opt.dataset.clicked=1; const ok=opt.dataset.ok==="1"; opt.classList.add(ok?"ok":"bad"); opt.querySelector(".mk").textContent=ok?"✓ Đúng":"✗ Sai"; return; }
-  const tf=e.target.closest(".tfrow"); if(tf){ tf.dataset.clicked=1; reveal(tf); return; }
+  const sl=P.slides[P.i];
+  const opt=e.target.closest(".opt"); if(opt){ opt.dataset.clicked=1; const ok=opt.dataset.ok==="1"; opt.classList.add(ok?"ok":"bad"); opt.querySelector(".mk").textContent=ok?"✓ Đúng":"✗ Sai";
+    sl.picked=sl.picked||[]; if(!sl.picked.includes(opt.dataset.l)) sl.picked.push(opt.dataset.l); if(!sl.res) sl.res=ok?"ok":"bad"; return; }
+  const tf=e.target.closest(".tfrow"); if(tf){ tf.dataset.clicked=1; reveal(tf); sl.tfShown=sl.tfShown||[]; if(!sl.tfShown.includes(tf.dataset.l)) sl.tfShown.push(tf.dataset.l); return; }
   if(e.target.closest("[data-timer]")){ toggleTimer(); return; }
   const r=$("stage").getBoundingClientRect(); go(e.clientX<r.left+r.width*0.28?-1:1);
 });
@@ -733,17 +1391,20 @@ document.addEventListener("keydown",e=>{
   const k=e.key, lk=$("layer").dataset.kind;
   if(lk && lk.startsWith("cu-")){ closeLayer(); e.preventDefault(); return; }
   if(k==="Escape"){ if(lk) closeLayer(); else if(P.pen) setPen(false); else if(!document.fullscreenElement) closeShow(); return; }
+  if((k===" "||k==="Enter") && e.target.closest && e.target.closest("#mini,#ctl,#pill")) return;
   if(["ArrowRight","ArrowDown","PageDown"," ","Enter"].includes(k)){ e.preventDefault(); if(lk==="pick"||lk==="help") closeLayer(); go(1); }
   else if(["ArrowLeft","ArrowUp","PageUp","Backspace"].includes(k)){ e.preventDefault(); go(-1); }
   else if(k==="Home") jump(0); else if(k==="End") jump(P.slides.length-1);
   else if(k==="o"||k==="O") overview();
   else if(k==="h"||k==="H"){ setMenu(!$("ctl").classList.contains("collapsed")); return; }
   else if(k==="f"||k==="F") $("cFull").click();
+  else if(k==="l"||k==="L") $("cFit").click();
   else if(k==="t"||k==="T"){ const i=THEMES.findIndex(t=>t.id===P.opts.theme); P.opts.theme=THEMES[(i+1)%THEMES.length].id; saveOpts(); syncCtl(); render(); }
   else if(k==="b"||k==="B"){ P.opts.bold=(P.opts.bold+1)%3; saveOpts(); syncCtl(); render(); }
   else if(k==="+"||k==="=") $("cBig").click(); else if(k==="-") $("cSmall").click();
   else if(k==="d"||k==="D"){ const sl=P.slides[P.i]; if(sl.kind==="thuchanh"||sl.kind==="vidu"){ P.step=maxStep(sl); applyStep(); } }
   else if(k==="g"||k==="G") toggleTimer();
+  else if(k==="a"||k==="A") setAuto(!A.on);
   else if(k==="r"||k==="R") pick();
   else if(k==="p"||k==="P") setPen(!P.pen);
   else if(k==="x"||k==="X") clearInk();
@@ -753,6 +1414,8 @@ document.addEventListener("keydown",e=>{
   poke();
 });
 window.addEventListener("resize",()=>{ if(!$("show").hidden){ sizeInk(); fit(); } });
+function applyFit(){ const fill=P.opts.fill!==false; $("show").dataset.fit=fill?"fill":"169"; $("cFit").textContent=fill?"▣ Lấp đầy":"▭ 16:9"; $("cFit").setAttribute("aria-pressed",fill); }
+$("cFit").onclick=()=>{ P.opts.fill=P.opts.fill===false; saveOpts(); applyFit(); sizeInk(); fit(); toast(P.opts.fill?"Lấp đầy toàn màn hình":"Giữ khung 16:9"); };
 document.addEventListener("fullscreenchange",()=>setTimeout(()=>{ if(!$("show").hidden){ sizeInk(); fit(); } },120));
 
 /* ---------------- trang soạn ---------------- */
@@ -760,6 +1423,10 @@ function showMsgs(list){ const b=$("msgs"); b.innerHTML=""; list.forEach(([k,t])
 function build(){
   try{
     const {doc,warns}=parseAny($("src").value);
+    const sel=$("mTopic"), prev=sel.dataset.v!=null?sel.dataset.v:String(store.get("mTopic","-1"));
+    sel.innerHTML=`<option value="-1">${doc.sheets.length>1?`Tất cả (${doc.sheets.length} chủ đề)`:"Cả bài"}</option>`+(doc.sheets.length>1?doc.sheets.map((s,i)=>`<option value="${i}">${i+1}. ${esc(plainT(s.title))}</option>`).join(""):"");
+    sel.value=[...sel.options].some(o=>o.value===prev)?prev:"-1"; sel.dataset.v=sel.value;
+    $("mVD").disabled=$("mMode").value!=="luyentap";
     P.slides=buildSlides(doc); P.ink={};
     const c={ct:0,vidu:0,thuchanh:0}; P.slides.forEach(s=>{ if(c[s.kind]!=null) c[s.kind]++; });
     $("stats").innerHTML=[["Slide",P.slides.length],["Công thức",c.ct],["Ví dụ",c.vidu],["Thực hành",c.thuchanh]].map(([a,b])=>`<div class="stat"><b>${b}</b><span>${a}</span></div>`).join("");
@@ -771,6 +1438,11 @@ function build(){
 }
 $("outline").addEventListener("click",e=>{ const b=e.target.closest("[data-at]"); if(b) openShow(+b.dataset.at); });
 $("btnPlay").onclick=()=>openShow(0);
+$("btnAuto").onclick=()=>openShow(0,true);
+$("btnSample2").onclick=()=>{ $("src").value=$("sample2").textContent.trim()+"\n"; save(); $("mTopic").dataset.v="0"; $("mMode").value="luyentap"; store.set("mMode","luyentap"); build(); };
+[["mMode","value"],["mVD","checked"],["mShuffle","checked"]].forEach(([id,pr])=>{ const v=store.get(id,null); if(v!=null) $(id)[pr]=v; $(id).addEventListener("change",()=>{ store.set(id,$(id)[pr]); build(); }); });
+$("mTopic").addEventListener("change",()=>{ $("mTopic").dataset.v=$("mTopic").value; store.set("mTopic",$("mTopic").value); build(); });
+[["optSpeed","value"],["optThink","value"],["optLoop","checked"]].forEach(([id,pr])=>{ const v=store.get(id,null); if(v!=null) $(id)[pr]=v; $(id).addEventListener("change",()=>store.set(id,$(id)[pr])); });
 $("btnCheck").onclick=build;
 $("btnSample").onclick=()=>{ $("src").value=$("sample").textContent.trim()+"\n"; save(); build(); };
 $("btnClear").onclick=()=>{ $("src").value=""; save(); build(); };
@@ -780,14 +1452,162 @@ $("src").addEventListener("input",()=>{ save(); clearTimeout(build.t); build.t=s
 $("optTheme").innerHTML=THEMES.map(t=>`<option value="${t.id}">${t.name}</option>`).join("");
 $("optTheme").value=P.opts.theme; $("optTheme").onchange=e=>{ P.opts.theme=e.target.value; saveOpts(); };
 ["optClass","optStep","optTime"].forEach(id=>{ const v=store.get(id,null); if(v!=null) $(id).value=v; $(id).addEventListener("change",()=>{ store.set(id,$(id).value); build(); }); });
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{ document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b)); ["lesson","prompt","spec"].forEach(t=>$("tab-"+t).hidden=t!==b.dataset.tab); });
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{ document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b)); ["lesson","spec"].forEach(t=>$("tab-"+t).hidden=t!==b.dataset.tab); });
+
+/* ---------------- in phiếu làm bài có dòng kẻ ---------------- */
+let dlApi=null;
+if(window.claude && typeof window.claude.use==="function"){ window.claude.use("downloads").then(d=>{ dlApi=d; }).catch(()=>{}); }
+const inArtifact = !!(window.claude && typeof window.claude.use==="function");
+const ROMAN=["I","II","III","IV","V"];
+const plen=s=>String(s||"").replace(/\$([^$]*)\$/g,(m,x)=>"x".repeat(Math.max(2,Math.floor(x.length/3)))).length;
+function lines(n){ return n>0 ? `<div class="lines">${'<div class="ln"></div>'.repeat(n)}</div>` : ""; }
+function stemHTML(s){ return s.items.map(it=>it.type==="item" ? `<div>${it.n}) ${rich(it.text)}</div>` : itemHTML(it)).join(""); }
+function phieuHTML(doc){
+  const eco=$("phEco").checked;
+  const n=+$("phDong").value, ntl=eco?Math.max(3,n*2):Math.max(4,n*3), vd=$("phVD").checked, ct=$("phCT").checked, key=$("phKey").checked, mix=$("mShuffle").checked;
+  const ti=+$("mTopic").value, sheets=(ti>=0&&doc.sheets[ti]?[doc.sheets[ti]]:doc.sheets).filter(sh=>sh.sections.some(s=>s.kind==="thuchanh"||s.kind==="vidu"));
+  if(!sheets.length) return null;
+  let html="", keys=[];
+  sheets.forEach((sh,si)=>{
+    if(eco){ html+=`<section class="sheet eco-s"><div class="ph-gon"><b>PHIẾU LÀM BÀI · ${rich(sh.title||"Luyện tập")}</b><div>Họ tên: <i></i> Lớp: <i class="s"></i></div></div>`; }
+    else html+=`<section class="sheet${si?" pb":""}">
+      <div class="ph-top"><span>${esc(String($("phSchool").value||""))}</span><span>Ngày: ………………</span></div>
+      <h1>PHIẾU LÀM BÀI</h1><h2>${rich(sh.title||"Luyện tập")}</h2>
+      <div class="ph-id"><span>Họ và tên: <i></i></span><span>Lớp: <i class="s"></i></span><span>Điểm: <b></b></span></div>`;
+    if(ct){
+      const cts=sh.sections.filter(s=>s.kind==="ct"||s.kind==="ghichu");
+      if(cts.length) html+=`<div class="recap"><div class="rc-h">Nhắc lại kiến thức</div><div class="rc-g">${cts.map(s=>`<div class="rc-b"><b>${rich(s.title)}</b>${s.items.map(itemHTML).join("")}</div>`).join("")}</div></div>`;
+    }
+    let th=sh.sections.filter(s=>s.kind==="thuchanh"); if(mix) th=shuffled(th);
+    const groups=[["Trắc nghiệm nhiều phương án lựa chọn",th.filter(s=>s.options.length)],["Trắc nghiệm đúng sai",th.filter(s=>!s.options.length&&s.tf.length)],["Trả lời ngắn",th.filter(s=>!s.options.length&&!s.tf.length)]];
+    if(vd) groups.push(["Tự luận",sh.sections.filter(s=>s.kind==="vidu")]);
+    let part=0; const k={title:sh.title,rows:[]};
+    groups.forEach(([name,items])=>{
+      if(!items.length) return;
+      html+=`<div class="part">Phần ${ROMAN[part]}. ${name}</div>`; part++;
+      items.forEach((s,q)=>{
+        let body=stemHTML(s);
+        if(s.options.length){ const m=Math.max(...s.options.map(o=>plen(o.text))); const c=eco?(m<=6?4:m<=16?2:1):(m<=16?4:m<=38?2:1);
+          body+=`<div class="pa c${c}">${s.options.map(o=>`<div><b>${o.L}.</b> ${rich(o.text,true)}</div>`).join("")}</div>`; }
+        if(s.tf.length) body+=`<table class="ds"><thead><tr><th></th><th>Mệnh đề</th><th>Đúng</th><th>Sai</th></tr></thead><tbody>${s.tf.map(r=>`<tr><td>${r.L})</td><td>${rich(r.text)}</td><td></td><td></td></tr>`).join("")}</tbody></table>`;
+        if(name==="Trả lời ngắn") body+=`<div class="ds-ans"><b>Đáp số:</b> <span></span></div>`;
+        html+=`<div class="q"><div class="qh"><b>Câu ${q+1}.</b><div>${body}</div></div>${lines(name==="Tự luận"?ntl:n)}</div>`;
+        const ans = s.options.length ? s.options.filter(o=>o.ok).map(o=>o.L).join(", ")||"?" : s.tf.length ? s.tf.map(r=>`${r.L}) ${r.val?"Đ":"S"}`).join("  ") : (s.answer||"—");
+        k.rows.push([`${ROMAN[part-1]}.${q+1}`,ans,s.steps.join(" ")]);
+      });
+    });
+    keys.push(k);
+    html+=`</section>`;
+  });
+  if(eco){
+    html=`<div class="flow">${html}</div>`;
+    if(key && keys.some(k=>k.rows.length)) html+=`<section class="sheet pb keygon"><b>ĐÁP ÁN</b> (trang riêng cho giáo viên)${keys.map(k=>k.rows.length?`<p><b>${rich(k.title)}:</b> ${k.rows.map(r=>`${r[0]} ${rich(r[1])}`).join(";  ")}</p>`:"").join("")}</section>`;
+    return html;
+  }
+  if(key && keys.some(k=>k.rows.length)){
+    html+=`<section class="sheet pb"><h1>ĐÁP ÁN – HƯỚNG DẪN</h1>${keys.map(k=>`<h3>${rich(k.title)}</h3><table class="key"><thead><tr><th>Câu</th><th>Đáp án</th><th>Gợi ý lời giải</th></tr></thead><tbody>${k.rows.map(r=>`<tr><td>${r[0]}</td><td>${rich(r[1],true)}</td><td>${rich(r[2])}</td></tr>`).join("")}</tbody></table>`).join("")}</section>`;
+  }
+  return html;
+}
+const PH_CSS=`@page{size:A4;margin:13mm 14mm 16mm;@bottom-right{content:"Trang " counter(page) " / " counter(pages);font:8pt "Be Vietnam Pro",Arial,sans-serif;color:#666}}
+html,body{margin:0;background:#fff;color:#111}
+body{font-family:"Noto Serif","Times New Roman",serif;font-size:11.5pt;line-height:1.4}
+*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}
+.sheet.pb{break-before:page}
+.ph-top{display:flex;justify-content:space-between;font:8.5pt "Be Vietnam Pro",Arial,sans-serif;color:#555;text-transform:uppercase}
+h1{font:700 15pt "Be Vietnam Pro",Arial,sans-serif;letter-spacing:.06em;text-align:center;margin:4px 0 0}
+h2{font:600 12pt "Be Vietnam Pro",Arial,sans-serif;text-align:center;margin:2px 0 6px}
+h3{font:700 11pt "Be Vietnam Pro",Arial,sans-serif;margin:12px 0 4px}
+.ph-id{display:flex;gap:14px;align-items:flex-end;border-top:.6pt solid #888;border-bottom:.6pt solid #888;padding:6px 0;margin-bottom:6px}
+.ph-id span{display:flex;align-items:flex-end;gap:4px;white-space:nowrap}
+.ph-id span:first-child{flex:1}
+.ph-id i{flex:1;border-bottom:1px dotted #555;height:1em;display:inline-block;min-width:2cm}
+.ph-id i.s{flex:none;width:2cm}
+.ph-id b{display:inline-block;width:1.4cm;height:1.1em;border:.6pt solid #777}
+.recap{margin:6px 0 2px;font-size:9.5pt}
+.rc-h{font:700 8.5pt "Be Vietnam Pro",Arial,sans-serif;letter-spacing:.08em;color:#555;text-transform:uppercase;margin-bottom:3px}
+.rc-g{columns:2;column-gap:10px}
+.rc-b{break-inside:avoid;border:.6pt solid #aaa;border-radius:3px;padding:4px 6px;margin-bottom:6px}
+.rc-b>b{display:block;font:700 8.5pt "Be Vietnam Pro",Arial,sans-serif;text-transform:uppercase;margin-bottom:2px}
+.rc-b .s-item{display:flex;gap:4px}
+.part{font:700 10.5pt "Be Vietnam Pro",Arial,sans-serif;color:#1414C4;text-transform:uppercase;border-bottom:.8pt solid #1414C4;padding-bottom:2px;margin:14px 0 6px;break-after:avoid}
+.q{break-inside:avoid;margin:0 0 4px}
+.qh{display:grid;grid-template-columns:auto 1fr;gap:6px}
+.qh>div>*{margin:2px 0}
+.pa{display:grid;gap:6px 12px;margin-top:4px}
+.pa.c4{grid-template-columns:repeat(4,1fr)}.pa.c2{grid-template-columns:repeat(2,1fr)}.pa.c1{grid-template-columns:1fr}
+table{border-collapse:collapse;width:100%}
+table.ds{margin-top:5px}
+table.ds th,table.ds td,table.key th,table.key td{border:.5pt solid #888;padding:4px 6px;vertical-align:middle}
+table.ds th{font-weight:700}
+table.ds td:nth-child(1){width:2em;text-align:center}
+table.ds td:nth-child(3),table.ds td:nth-child(4){width:1.4cm}
+table.key{font-size:10pt}
+table.key td:nth-child(1),table.key td:nth-child(2){text-align:center;white-space:nowrap}
+.ds-ans{margin-top:6px;display:flex;align-items:center;gap:6px}
+.ds-ans span{display:inline-block;width:4.5cm;height:1.2em;border:.6pt solid #777}
+.lines{margin:2px 0 6px}
+.ln{height:8mm;border-bottom:1px dotted #8a8a8a}
+body.lien .ln{border-bottom:.6px solid #b5b5b5}
+.s-note{font-style:italic}
+mjx-container{margin:0!important}
+@media screen{body{background:#e9e7e1}.sheet{width:182mm;margin:14px auto;padding:14mm;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}.tip{max-width:182mm;margin:14px auto 0;font:14px "Be Vietnam Pro",Arial,sans-serif}}
+@media print{.tip{display:none}}`;
+const PH_ECO=`@page{size:A4;margin:8mm 8mm 11mm;@bottom-right{content:"Trang " counter(page) " / " counter(pages);font:7pt Arial,sans-serif;color:#777}}
+body{font-size:9.5pt;line-height:1.3}
+.flow{columns:2;column-gap:6mm;column-rule:.4pt solid #ccc}
+.sheet.eco-s{margin:0 0 6px}
+.ph-gon{break-inside:avoid;border-top:1pt solid #000;border-bottom:.5pt solid #000;padding:2px 0 3px;margin:8px 0 4px}
+.ph-gon b{font:700 9pt "Be Vietnam Pro",Arial,sans-serif;display:block}
+.ph-gon div{display:flex;gap:4px;align-items:flex-end;font-size:8.5pt}
+.ph-gon i{flex:1;border-bottom:1px dotted #555;height:1em}.ph-gon i.s{flex:none;width:1.4cm}
+.part{color:#000;border-bottom-color:#000;font-size:8.5pt;margin:8px 0 4px}
+.ln{height:6mm}
+.pa{gap:3px 8px}
+table.ds th,table.ds td{padding:2px 4px}
+table.ds td:nth-child(3),table.ds td:nth-child(4){width:.8cm}
+table.ds{break-inside:avoid}
+.ds-ans span{width:3cm}
+.keygon{font-size:8.5pt}.keygon p{margin:4px 0}
+@media screen{.flow{width:194mm;margin:14px auto;padding:8mm;background:#fff}.flow .sheet{width:auto;margin:0 0 6px;padding:0;box-shadow:none;background:none}}`;
+async function printPhieu(){
+  let doc; try{ doc=parseAny($("src").value).doc; }catch(e){ toast(e.message); return; }
+  const html=phieuHTML(doc);
+  if(!html){ toast("Chủ đề này chưa có khối {thuchanh} hay {vidu} để làm phiếu."); return; }
+  const host=$("phHost"); host.innerHTML=html;
+  if(window.MathJax&&MathJax.typesetPromise){ try{ await MathJax.startup.promise; MathJax.typesetClear&&MathJax.typesetClear([host]); await MathJax.typesetPromise([host]); }catch{} }
+  const mjx=(document.getElementById("MJX-SVG-styles")||{}).textContent||"";
+  const out=`<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>Phiếu làm bài</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap">
+<style>${mjx}\n${PH_CSS}\n${$("phEco").checked?PH_ECO:""}</style></head><body class="${$("phKieu").value==="lien"?"lien":""}">
+<p class="tip">Bấm <b>Ctrl+P</b> → <b>Lưu dưới dạng PDF</b>, tắt <b>Đầu trang và chân trang</b>.</p>
+${host.innerHTML}
+<scr${""}ipt>(document.fonts?document.fonts.ready:Promise.resolve()).then(function(){setTimeout(function(){window.print()},350)});<\/script></body></html>`;
+  host.innerHTML="";
+  const name="phieu-lam-bai.html";
+  if(inArtifact){
+    if(!dlApi){ toast("Trang này không in trực tiếp được — mở file buc-giang-cong-thuc.html trên máy để in."); return; }
+    try{ await dlApi.save({filename:name,data:out}); toast("Đã lưu phiếu. Mở file bằng Chrome, hộp thoại in sẽ tự hiện."); }
+    catch(e){ toast(e&&e.code==="declined"?"Đã huỷ.":"Không lưu được ở đây."); }
+    return;
+  }
+  const f=document.createElement("iframe"); f.setAttribute("aria-hidden","true");
+  f.style.cssText="position:fixed;left:-10000px;top:0;width:900px;height:800px;border:0";
+  document.body.appendChild(f); f.srcdoc=out; setTimeout(()=>f.remove(),120000);
+  toast("Đang mở hộp thoại in…");
+}
+$("btnPhieu").onclick=printPhieu;
+[["phDong","value"],["phKieu","value"],["phEco","checked"],["phVD","checked"],["phCT","checked"],["phKey","checked"],["phSchool","value"]].forEach(([id,pr])=>{ const v=store.get(id,null); if(v!=null) $(id)[pr]=v; $(id).addEventListener("change",()=>store.set(id,$(id)[pr])); });
 
 /* ---------------- prompt AI ---------------- */
 function prompt(){
   const L=$("pLesson").value.trim()||"(tên bài)", G=$("pGrade").value, B=$("pBook").value.trim()||"Kết nối tri thức", vd=$("pVD").value, tn=+$("pTN").value, ds=+$("pDS").value, tl=+$("pTL").value;
-  return `Bạn là giáo viên Toán THPT giỏi. Soạn nội dung TRÌNH CHIẾU cho bài "${L}" — ${G}, bộ sách ${B} (GDPT 2018), gồm: các khối công thức trọng tâm, ${vd} ví dụ minh hoạ có lời giải từng bước, và ${tn+ds+tl} câu thực hành theo định dạng đề THPT 2025 (${tn} trắc nghiệm 4 phương án${ds?`, ${ds} câu đúng/sai 4 mệnh đề`:""}${tl?`, ${tl} câu trả lời ngắn`:""}).
+  const LT=$("pKind").value==="luyentap";
+  return `Bạn là giáo viên Toán THPT giỏi. Soạn nội dung TRÌNH CHIẾU ${LT?"tiết LUYỆN TẬP CỦNG CỐ cho chủ đề":"cho bài"} "${L}" — ${G}, bộ sách ${B} (GDPT 2018), gồm: ${LT?"2–4 khối công thức nhắc lại thật ngắn gọn":"các khối công thức trọng tâm"}, ${vd} ví dụ ${LT?"mẫu cho các dạng bài chính":"minh hoạ"} có lời giải từng bước, và ${tn+ds+tl} câu ${LT?"luyện tập":"thực hành"} theo định dạng đề THPT 2025 (${tn} trắc nghiệm 4 phương án${ds?`, ${ds} câu đúng/sai 4 mệnh đề`:""}${tl?`, ${tl} câu trả lời ngắn`:""}).
 
-Yêu cầu nội dung:
+Yêu cầu nội dung:${LT?`
+- Đây là tiết luyện tập: câu hỏi phủ đủ các dạng bài của chủ đề, sắp xếp từ nhận biết → thông hiểu → vận dụng; có ít nhất 1 bài toán thực tế.
+- Mỗi câu ghi thời gian làm hợp lý (trắc nghiệm 1–2 phút, đúng/sai 3–4 phút, trả lời ngắn 2–4 phút).`:""}
 - Công thức đúng ký hiệu SGK, kèm điều kiện. Mỗi khối công thức 3–7 dòng.
 - Ví dụ đi từ dễ đến khó; mỗi bước giải là MỘT ý ngắn (sẽ hiện lần lượt khi giảng), tối đa 5 bước; kết luận ghi rõ đáp số.
 - Câu thực hành bám sát ví dụ, đáp án chính xác; phương án nhiễu hợp lý (sai lầm học sinh hay mắc); có lời giải ngắn 1–2 dòng.
@@ -838,12 +1658,33 @@ Quy tắc bắt buộc:
 - Thời gian mỗi câu ghi trong ngoặc nhọn: {thuchanh, 2 phút}. Không thêm dòng phụ đề hay dòng @.`;
 }
 function refreshPrompt(){ $("prompt").textContent=prompt(); }
-["pLesson","pGrade","pBook","pVD","pTN","pDS","pTL"].forEach(id=>$(id).addEventListener("input",refreshPrompt));
+["pKind","pLesson","pGrade","pBook","pVD","pTN","pDS","pTL"].forEach(id=>$(id).addEventListener("input",refreshPrompt));
+const PRESETS={giang:{pKind:"giang",pVD:"3",pTN:"3",pDS:"1",pTL:"1"},luyentap:{pKind:"luyentap",pVD:"2",pTN:"6",pDS:"3",pTL:"3"},ontap:{pKind:"luyentap",pVD:"1",pTN:"8",pDS:"3",pTL:"4"}};
+document.querySelector(".presets").addEventListener("click",e=>{ const b=e.target.closest("[data-p]"); if(!b) return; Object.entries(PRESETS[b.dataset.p]).forEach(([id,v])=>{ $(id).value=v; }); savePrompt(); refreshPrompt(); toast("Đã chọn: "+b.textContent); });
+function savePrompt(){ store.set("prompt",Object.fromEntries(["pKind","pLesson","pGrade","pBook","pVD","pTN","pDS","pTL"].map(id=>[id,$(id).value]))); }
+(()=>{ const v=store.get("prompt",null); if(v) Object.entries(v).forEach(([id,x])=>{ if($(id)) $(id).value=x; }); })();
+["pKind","pLesson","pGrade","pBook","pVD","pTN","pDS","pTL"].forEach(id=>$(id).addEventListener("change",savePrompt));
+$("btnShowPrompt").onclick=()=>{ const h=!$("prompt").hidden; $("prompt").hidden=h; $("btnShowPrompt").setAttribute("aria-expanded",!h); $("btnShowPrompt").textContent=h?"Xem prompt":"Ẩn prompt"; };
+$("btnPasteAI").onclick=async()=>{
+  try{ const txt=await navigator.clipboard.readText(); if(!txt.trim()) throw 0; $("src").value=cleanAI(txt); save(); build(); toast("Đã dán kết quả AI."); $("src").scrollIntoView({block:"nearest"}); }
+  catch{ $("src").value=""; $("src").focus(); toast("Bấm Ctrl+V (Mac: Cmd+V) để dán kết quả AI vào ô nội dung."); }
+};
+// loại bỏ ```markdown ... ``` và lời dẫn AI thêm vào
+function cleanAI(s){
+  s=String(s).replace(/\r/g,"");
+  const m=/```(?:markdown|md)?\s*\n([\s\S]*?)\n```/i.exec(s); if(m) s=m[1];
+  return s.trim()+"\n";
+}
+$("src").addEventListener("paste",()=>setTimeout(()=>{ const v=$("src").value; if(/```/.test(v)){ $("src").value=cleanAI(v); save(); build(); toast("Đã bỏ dấu ``` của AI."); } },0));
+// kiểu bài ở khung chiếu → loại bài ở prompt
+$("mMode").addEventListener("change",()=>{ $("pKind").value=$("mMode").value==="full"?"giang":"luyentap"; savePrompt(); refreshPrompt(); });
 $("cpPrompt").onclick=async()=>{ try{ await navigator.clipboard.writeText(prompt()); toast("Đã sao chép prompt."); }catch{ const r=document.createRange(); r.selectNodeContents($("prompt")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast("Đã chọn sẵn — bấm Ctrl+C."); } };
 refreshPrompt();
 
 /* ---------------- khởi động ---------------- */
 $("src").value=store.get("src","")||($("sample").textContent.trim()+"\n");
+$("aiBox").open = store.get("aiOpen", true);
+$("aiBox").addEventListener("toggle",()=>store.set("aiOpen",$("aiBox").open));
 build();
 })();
 </script>
