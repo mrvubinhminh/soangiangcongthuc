@@ -1,4 +1,4 @@
-<title>Bục Giảng Công Thức</title>
+<title>Dạy học Toán – Thầy Vũ Tiến Lực</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap">
@@ -78,6 +78,68 @@ kbd{font-family:var(--f-code);font-size:.78rem;border:1px solid var(--line);bord
 .keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px 18px;font-size:.88rem}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:6px;font-size:.88rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:90}
 .toast.show{opacity:1}
+
+/* ===== khung ứng dụng: thanh bên + nội dung ===== */
+body{margin:0}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh;min-height:100dvh}
+.side{position:sticky;top:0;align-self:start;height:100vh;height:100dvh;display:flex;flex-direction:column;gap:4px;padding:18px 12px;padding-left:max(12px,env(safe-area-inset-left,0px));background:var(--panel);border-right:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;padding:2px 8px 16px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.brand .logo{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--accent);color:#fff;font:700 22px var(--f-math);flex:none}
+.brand b{display:block;font-size:1rem;line-height:1.2}
+.brand small{display:block;color:var(--muted);font-size:.78rem}
+.nv{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid transparent;background:none;padding:9px 10px;border-radius:8px;font-size:.92rem;color:var(--ink)}
+.nv .ic{width:22px;text-align:center;font-size:1rem;color:var(--muted)}
+.nv:hover{background:var(--code-bg);border-color:transparent}
+.nv[aria-current="page"]{background:color-mix(in srgb,var(--accent) 12%,var(--panel));color:var(--accent);font-weight:700}
+.nv[aria-current="page"] .ic{color:var(--accent)}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px;padding:8px}
+.side-foot small{color:var(--muted);font-size:.74rem}
+.main{min-width:0;display:flex;flex-direction:column;gap:16px;padding-block:18px 48px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;padding-bottom:12px;border-bottom:2px solid var(--ink)}
+.topbar h1{font-size:1.45rem;margin:0;line-height:1.2;text-wrap:balance}
+.topbar p{margin:2px 0 0;color:var(--muted);font-size:.9rem;font-weight:500}
+.view{display:flex;flex-direction:column;gap:14px}
+.vhead h2{margin:0;font-size:1.15rem}
+.vhead p{margin:4px 0 0;color:var(--muted);font-size:.9rem;max-width:80ch}
+.card{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:14px}
+#aiBox{border:2px solid var(--k-bia)}
+.sites{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.site{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-top:4px solid var(--sc);border-radius:10px;background:var(--panel);padding:14px}
+.site h3{margin:0;font-size:1rem}
+.site p{margin:0;color:var(--muted);font-size:.84rem;min-height:2.6em}
+.site .st{font-size:.74rem;font-weight:700;color:var(--ok)}
+.site .row button{padding:6px 10px}
+.site .rm{margin-left:auto;font-size:.76rem;color:var(--muted);border-style:dashed}
+.addsite summary{cursor:pointer;font-weight:600}
+@media (max-width:820px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;inset:auto 0 0 0;top:auto;height:auto;flex-direction:row;justify-content:space-around;gap:0;padding:4px max(6px,env(safe-area-inset-right,0px)) calc(4px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));border-right:none;border-top:1px solid var(--line);z-index:30}
+  .brand,.side-foot{display:none}
+  .nv{flex-direction:column;gap:2px;font-size:.66rem;padding:6px 4px;text-align:center;width:auto;flex:1}
+  .main{padding-bottom:90px}
+}
+/* ===== cửa sổ trang web ===== */
+#wins{position:fixed;inset:0;z-index:70;pointer-events:none}
+.win{position:fixed;display:flex;flex-direction:column;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.45);border:1px solid rgba(0,0,0,.25);pointer-events:auto;min-width:280px;min-height:200px}
+.win.hid{visibility:hidden;pointer-events:none}
+.win.full{border-radius:0;border:none}
+.win .wt{flex:none;display:flex;align-items:center;gap:4px;padding:4px 6px 4px 12px;background:#20242e;color:#fff;font:600 13px var(--f-ui);cursor:move;user-select:none;touch-action:none}
+.win.full .wt{cursor:default}
+.win .wt .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.win .wt button,.win .wt a{font:600 12px var(--f-ui);color:#fff;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:6px;padding:3px 8px;text-decoration:none;cursor:pointer}
+.win .wt button:hover,.win .wt a:hover{background:rgba(255,255,255,.24)}
+.win .wt button[aria-pressed="true"]{background:#fff;color:#111}
+.win iframe{flex:1;width:100%;border:0;background:#fff}
+.win .shield{position:absolute;inset:34px 0 0;display:none}
+.win.drag .shield,body.dragging .win .shield{display:block}
+.webpop{position:fixed;z-index:75;min-width:300px;max-width:calc(100vw - 24px);background:rgba(20,22,30,.96);color:#fff;border-radius:12px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.45);font:500 13px var(--f-ui)}
+.webpop .wr{display:grid;grid-template-columns:1fr auto auto auto;gap:4px;align-items:center;padding:4px}
+.webpop .wr .nm{padding-right:8px}
+.webpop .wr .nm small{display:block;color:#9aa3b5;font-size:11px}
+.webpop button{font:600 12px var(--f-ui);color:#fff;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:5px 9px;cursor:pointer}
+.webpop button:hover{background:rgba(255,255,255,.25)}
+.webpop .on{color:#7ee2a8}
+.webpop .hd{padding:4px 6px 6px;color:#9aa3b5;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
 
 /* hộp tạo bài bằng AI */
 .aibox{border:2px solid var(--k-bia);border-radius:10px;background:var(--panel);margin-bottom:16px}
@@ -261,49 +323,26 @@ kbd{font-family:var(--f-code);font-size:.78rem;border:1px solid var(--line);bord
 @media (prefers-reduced-motion:reduce){.sl-prog,.show-ctl,.timer.end{transition:none;animation:none}}
 </style>
 
-<div class="wrap">
-  <header>
-    <h1>Bục Giảng Công Thức<small>Trình chiếu bài dạy Toán 16:9 — công thức, ví dụ có lời giải từng bước, luyện tập củng cố theo chủ đề, tự động chạy</small></h1>
-    <div class="flow"><span class="kb"><i style="background:var(--k-ct)"></i>Công thức</span><span class="kb"><i style="background:var(--k-vd)"></i>Ví dụ</span><span class="kb"><i style="background:var(--k-th)"></i>Thực hành</span></div>
-  </header>
+<div class="app">
+  <nav class="side" aria-label="Chức năng">
+    <div class="brand"><span class="logo" aria-hidden="true">∑</span><span><b>Dạy học Toán</b><small>Thầy Vũ Tiến Lực</small></span></div>
+    <button class="nv" data-view="soan" aria-current="page"><span class="ic">▶</span><span>Soạn &amp; chiếu</span></button>
+    <button class="nv" data-view="ai"><span class="ic">✦</span><span>Tạo bài bằng AI</span></button>
+    <button class="nv" data-view="phieu"><span class="ic">🖨</span><span>In phiếu</span></button>
+    <button class="nv" data-view="web"><span class="ic">🌐</span><span>Trang web</span></button>
+    <button class="nv" data-view="help"><span class="ic">?</span><span>Hướng dẫn</span></button>
+    <div class="side-foot">
+      <button id="btnInstall" hidden>⤓ Cài ứng dụng</button>
+      <small>Trường THPT Nguyễn Hữu Cảnh</small>
+    </div>
+  </nav>
+  <main class="main">
+    <header class="topbar">
+      <div class="tt"><h1>Ứng dụng dạy học Toán</h1><p>Thầy Vũ Tiến Lực – Trường THPT Nguyễn Hữu Cảnh</p></div>
+      <div class="row tb-acts"><button class="primary" id="tbPlay">▶ Trình chiếu</button><button class="auto" id="tbAuto">⏵ Tự động</button><button id="tbWeb" title="Mở trang web dạy học">🌐 Trang web</button></div>
+    </header>
 
-  <div class="tabs" role="tablist">
-    <button role="tab" aria-selected="true" data-tab="lesson">Bài giảng</button>
-    <button role="tab" aria-selected="false" data-tab="spec">Cú pháp & phím tắt</button>
-  </div>
-
-  <section id="tab-lesson">
-    <details class="aibox" id="aiBox">
-      <summary><span class="ai-k">Bước 1</span> Tạo bài bằng AI — chọn bài, sao chép prompt, dán vào ChatGPT / Gemini / Claude <span class="ai-hint">bấm để mở / đóng</span></summary>
-      <div class="ai-body">
-        <div class="form">
-          <label>Loại bài<select id="pKind"><option value="giang">Bài giảng mới</option><option value="luyentap">Luyện tập củng cố</option></select></label>
-          <label class="wide2">Bài học / chủ đề<input id="pLesson" value="Phương trình lượng giác cơ bản"></label>
-          <label>Lớp<select id="pGrade"><option>Lớp 10</option><option selected>Lớp 11</option><option>Lớp 12</option><option>Lớp 9</option></select></label>
-          <label>Bộ sách<input id="pBook" value="Kết nối tri thức với cuộc sống"></label>
-          <label>Số ví dụ<select id="pVD"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
-          <label>Câu trắc nghiệm<select id="pTN"><option>2</option><option selected>3</option><option>4</option><option>6</option><option>8</option><option>10</option></select></label>
-          <label>Câu đúng/sai<select id="pDS"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></label>
-          <label>Câu trả lời ngắn<select id="pTL"><option>0</option><option selected>1</option><option>2</option><option>3</option><option>4</option></select></label>
-        </div>
-        <div class="presets" aria-label="Chọn nhanh">
-          <span>Chọn nhanh:</span>
-          <button type="button" data-p="giang">Bài giảng mới (3 VD · 5 câu)</button>
-          <button type="button" data-p="luyentap">Tiết luyện tập (2 VD · 12 câu)</button>
-          <button type="button" data-p="ontap">Ôn kiểm tra (1 VD · 15 câu)</button>
-        </div>
-        <div class="row ai-acts">
-          <button class="primary" id="cpPrompt">① Sao chép prompt</button>
-          <a class="lnk" href="https://claude.ai/new" target="_blank" rel="noopener">Mở Claude ↗</a>
-          <a class="lnk" href="https://chatgpt.com/" target="_blank" rel="noopener">Mở ChatGPT ↗</a>
-          <a class="lnk" href="https://gemini.google.com/app" target="_blank" rel="noopener">Mở Gemini ↗</a>
-          <button id="btnPasteAI">② Dán kết quả AI vào ô nội dung</button>
-          <button type="button" id="btnShowPrompt" aria-expanded="false">Xem prompt</button>
-        </div>
-        <pre class="code" id="prompt" hidden></pre>
-        <p class="hint">Kết quả AI có thể còn dấu <code>```markdown</code> ở đầu và cuối — ứng dụng tự bỏ đi. Sau khi dán, kiểm tra thông báo bên dưới ô nội dung rồi bấm ▶ Trình chiếu.</p>
-      </div>
-    </details>
+    <section class="view" id="v-soan">
     <div class="cols">
       <div class="pane">
         <div class="pane-head">
@@ -336,8 +375,54 @@ kbd{font-family:var(--f-code);font-size:.78rem;border:1px solid var(--line);bord
           <label>Ví dụ: hiện lời giải<select id="optStep"><option value="step">Từng bước</option><option value="all">Hiện hết khi bấm</option></select></label>
           <label>Giờ mặc định câu thực hành<select id="optTime"><option value="0">Không</option><option value="60">1 phút</option><option value="120" selected>2 phút</option><option value="180">3 phút</option><option value="300">5 phút</option></select></label>
         </div>
-        <div class="settings phbox">
-          <h3>In phiếu làm bài có dòng kẻ (theo chủ đề đang chọn)</h3>
+        <div class="settings">
+          <h3>Chiếu tự động</h3>
+          <label>Tốc độ chuyển slide<select id="optSpeed"><option value="1.5">Chậm</option><option value="1" selected>Vừa</option><option value="0.65">Nhanh</option></select></label>
+          <label>Thời gian suy nghĩ mỗi câu<select id="optThink"><option value="q" selected>Theo từng câu</option><option value="15">15 giây</option><option value="30">30 giây</option><option value="60">1 phút</option><option value="90">1 phút 30</option></select></label>
+          <label class="chk"><input type="checkbox" id="optLoop"> Hết bài thì chiếu lại từ đầu</label>
+        </div>
+      </div>
+    </div>
+    </section>
+
+    <section class="view" id="v-ai" hidden>
+      <div class="vhead"><h2>Tạo bài bằng AI</h2><p>Chọn bài và số câu → sao chép prompt → dán vào Claude, ChatGPT hoặc Gemini → dán kết quả về đây.</p></div>
+      <div class="card" id="aiBox">
+      <div class="ai-body">
+        <div class="form">
+          <label>Loại bài<select id="pKind"><option value="giang">Bài giảng mới</option><option value="luyentap">Luyện tập củng cố</option></select></label>
+          <label class="wide2">Bài học / chủ đề<input id="pLesson" value="Phương trình lượng giác cơ bản"></label>
+          <label>Lớp<select id="pGrade"><option>Lớp 10</option><option selected>Lớp 11</option><option>Lớp 12</option><option>Lớp 9</option></select></label>
+          <label>Bộ sách<input id="pBook" value="Kết nối tri thức với cuộc sống"></label>
+          <label>Số ví dụ<select id="pVD"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+          <label>Câu trắc nghiệm<select id="pTN"><option>2</option><option selected>3</option><option>4</option><option>6</option><option>8</option><option>10</option></select></label>
+          <label>Câu đúng/sai<select id="pDS"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></label>
+          <label>Câu trả lời ngắn<select id="pTL"><option>0</option><option selected>1</option><option>2</option><option>3</option><option>4</option></select></label>
+        </div>
+        <div class="presets" aria-label="Chọn nhanh">
+          <span>Chọn nhanh:</span>
+          <button type="button" data-p="giang">Bài giảng mới (3 VD · 5 câu)</button>
+          <button type="button" data-p="luyentap">Tiết luyện tập (2 VD · 12 câu)</button>
+          <button type="button" data-p="ontap">Ôn kiểm tra (1 VD · 15 câu)</button>
+        </div>
+        <div class="row ai-acts">
+          <button class="primary" id="cpPrompt">① Sao chép prompt</button>
+          <a class="lnk" href="https://claude.ai/new" target="_blank" rel="noopener">Mở Claude ↗</a>
+          <a class="lnk" href="https://chatgpt.com/" target="_blank" rel="noopener">Mở ChatGPT ↗</a>
+          <a class="lnk" href="https://gemini.google.com/app" target="_blank" rel="noopener">Mở Gemini ↗</a>
+          <button id="btnPasteAI">② Dán kết quả AI vào ô nội dung</button>
+          <button type="button" id="btnShowPrompt" aria-expanded="false">Xem prompt</button>
+        </div>
+        <pre class="code" id="prompt" hidden></pre>
+        <p class="hint">Kết quả AI có thể còn dấu <code>```markdown</code> ở đầu và cuối — ứng dụng tự bỏ đi. Dán xong, ứng dụng chuyển sang mục <b>Soạn &amp; chiếu</b> để thầy kiểm tra rồi bấm ▶ Trình chiếu.</p>
+      </div>
+      </div>
+    </section>
+
+    <section class="view" id="v-phieu" hidden>
+      <div class="vhead"><h2>In phiếu làm bài</h2><p>Phiếu có dòng kẻ cho học sinh làm bài, lấy từ các câu luyện tập và ví dụ của chủ đề.</p></div>
+      <div class="settings phbox">
+        <label>Chủ đề<select id="phTopic"></select></label>
           <label>Số dòng kẻ mỗi câu<select id="phDong"><option>0</option><option>1</option><option selected>2</option><option>3</option><option>4</option><option>6</option></select></label>
           <label>Kiểu dòng<select id="phKieu"><option value="cham">Dòng chấm</option><option value="lien">Dòng liền mờ</option></select></label>
           <label>Tên trường (đầu phiếu)<input id="phSchool" placeholder="THPT Nguyễn Hữu Cảnh"></label>
@@ -347,18 +432,20 @@ kbd{font-family:var(--f-code);font-size:.78rem;border:1px solid var(--line);bord
           <label class="chk" style="grid-column:1/-1"><input type="checkbox" id="phEco"> <span><b>Siêu tiết kiệm</b> — 2 cột, chữ nhỏ, lề hẹp, các chủ đề in nối tiếp, đáp án gọn trên trang riêng</span></label>
           <div class="acts" style="grid-column:1/-1"><button class="primary" id="btnPhieu">🖨 In phiếu làm bài (PDF)</button></div>
         </div>
-        <div class="settings">
-          <h3>Chiếu tự động</h3>
-          <label>Tốc độ chuyển slide<select id="optSpeed"><option value="1.5">Chậm</option><option value="1" selected>Vừa</option><option value="0.65">Nhanh</option></select></label>
-          <label>Thời gian suy nghĩ mỗi câu<select id="optThink"><option value="q" selected>Theo từng câu</option><option value="15">15 giây</option><option value="30">30 giây</option><option value="60">1 phút</option><option value="90">1 phút 30</option></select></label>
-          <label class="chk"><input type="checkbox" id="optLoop"> Hết bài thì chiếu lại từ đầu</label>
-        </div>
-      </div>
-    </div>
-  </section>
+    </section>
 
+    <section class="view" id="v-web" hidden>
+      <div class="vhead"><h2>Trang web dạy học</h2><p>Mở trong cửa sổ ¼, ½ hoặc toàn màn hình — dùng được cả khi đang trình chiếu (nút 🌐 trên menu hoặc phím N). Ẩn cửa sổ thì trang vẫn chạy ngầm, không mất dữ liệu đang làm.</p></div>
+      <div class="sites" id="sitesList"></div>
+      <details class="card addsite">
+        <summary>＋ Thêm trang web của thầy</summary>
+        <div class="row" style="margin-top:10px"><input id="nsName" placeholder="Tên hiển thị" style="flex:1 1 160px"><input id="nsUrl" placeholder="https://…" style="flex:2 1 240px"><button class="primary" id="nsAdd">Thêm</button></div>
+      </details>
+      <p class="hint">Một số trang không cho phép hiển thị trong khung của trang khác — khi khung trống hoặc báo lỗi, bấm <b>↗ Tab mới</b> trên thanh tiêu đề cửa sổ.</p>
+    </section>
 
-  <section id="tab-spec" hidden>
+    <section class="view" id="v-help" hidden>
+      <div class="vhead"><h2>Hướng dẫn</h2><p>Cú pháp file bài giảng (.md) và phím tắt khi trình chiếu.</p></div>
     <div class="spec-wrap"><table class="spec">
       <thead><tr><th>Phần</th><th>Cách viết trong .md</th></tr></thead>
       <tbody>
@@ -394,7 +481,8 @@ Nghiệm dương nhỏ nhất ... bằng bao nhiêu độ?
     <p class="hint" style="margin-top:10px">File .md này dùng chung với Xưởng Trang Công Thức: khi in PDF bằng build.py, các khối ví dụ và thực hành được bỏ qua, chỉ in phần công thức.</p>
     <h3 style="margin:18px 0 8px;font-size:1rem">Phím tắt khi trình chiếu</h3>
     <div class="keys" id="keysList"></div>
-  </section>
+    </section>
+  </main>
 </div>
 
 <div id="show" hidden tabindex="-1" role="dialog" aria-label="Trình chiếu bài giảng">
@@ -418,6 +506,7 @@ Nghiệm dương nhỏ nhất ... bằng bao nhiêu độ?
   <span class="penbar" id="penbar"></span>
   <button type="button" id="cTimer" title="Đồng hồ (G)">⏱</button>
   <button type="button" id="cPick" title="Bốc thăm học sinh (R)">Gọi HS</button>
+  <button type="button" id="cWeb" title="Trang web dạy học (N)">🌐 Web</button>
   <button type="button" id="cHelp" class="wideonly" title="Phím tắt (?)">?</button>
   <span class="sep"></span>
   <button type="button" id="cHide" title="Thu gọn menu (H)" aria-label="Thu gọn menu">▾ Ẩn</button>
@@ -441,10 +530,13 @@ Nghiệm dương nhỏ nhất ... bằng bao nhiêu độ?
   <button type="button" data-act="auto" title="Tự động chạy (A)" aria-label="Tự động chạy" aria-pressed="false">⏵</button>
   <button type="button" data-act="ov" title="Tổng quan (O)" aria-label="Tổng quan">☷</button>
   <button type="button" data-act="black" title="Màn đen (.)" aria-label="Màn đen">■</button>
+  <button type="button" data-act="web" title="Trang web dạy học (N)" aria-label="Trang web dạy học">🌐</button>
   <span class="msep"></span>
   <button type="button" data-act="menu" title="Hiện menu đầy đủ (H)" aria-label="Hiện menu đầy đủ">☰</button>
 </div>
 <div id="phHost" aria-hidden="true" style="position:absolute;left:-10000px;top:0;width:182mm;font-family:'Noto Serif',serif;font-size:11.5pt"></div>
+<div id="wins" aria-live="polite"></div>
+<div class="webpop" id="webpop" hidden role="menu" aria-label="Mở trang web"></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script type="text/plain" id="sample"># Phương trình lượng giác cơ bản
@@ -1329,7 +1421,7 @@ function pick(){
   let k=0; const roll=setInterval(()=>{ $("pnum") && ($("pnum").textContent=1+Math.floor(Math.random()*N)); if(++k>14){ clearInterval(roll); $("pnum") && ($("pnum").textContent=num); } },55);
 }
 const KEYS=[["→ Space Enter","Tiếp / hiện bước tiếp theo"],["← Backspace","Lùi"],["Home / End","Slide đầu / cuối"],["O","Tổng quan, chọn slide"],["H","Thu gọn / hiện menu"],["F","Toàn màn hình"],["L","Lấp đầy màn hình / giữ khung 16:9"],
-  ["T","Đổi kiểu màu"],["B","Đổi độ đậm"],["+ / −","Chữ to / nhỏ"],["D","Hiện đáp án câu thực hành"],["G","Bật / dừng đồng hồ"],["A","Bật / tắt tự động chạy"],["R","Bốc thăm học sinh"],
+  ["T","Đổi kiểu màu"],["B","Đổi độ đậm"],["+ / −","Chữ to / nhỏ"],["D","Hiện đáp án câu thực hành"],["G","Bật / dừng đồng hồ"],["N","Mở trang web dạy học (cửa sổ ¼, ½, toàn màn hình)"],["A","Bật / tắt tự động chạy"],["R","Bốc thăm học sinh"],
   ["P","Bật / tắt bút vẽ"],["Z / X","Xoá nét cuối / xoá hết nét"],[".  /  W","Màn đen / màn trắng"],["?","Bảng phím tắt"],["Esc","Đóng lớp phủ / thoát"]];
 function help(){ layer("help",`<div class="help"><h3>Phím tắt</h3><div class="g">${KEYS.map(k=>`<div><kbd>${esc(k[0])}</kbd> ${esc(k[1])}</div>`).join("")}</div></div>`); }
 $("keysList").innerHTML=KEYS.map(k=>`<div><kbd>${esc(k[0])}</kbd> ${esc(k[1])}</div>`).join("");
@@ -1354,7 +1446,7 @@ $("mini").addEventListener("click",e=>{
   const sl=P.slides[P.i];
   ({prev:()=>go(-1), next:()=>go(1), pen:()=>setPen(!P.pen), undo:()=>{ (P.ink[P.i]||[]).pop(); drawInk(); }, clear:clearInk,
     answer:()=>{ if(sl.kind==="thuchanh"||sl.kind==="vidu"){ P.step=maxStep(sl); applyStep(); } else toast("Slide này không có đáp án."); },
-    timer:toggleTimer, pick, auto:()=>setAuto(!A.on), ov:overview, black:()=>curtain("black"), menu:()=>setMenu(false)})[b.dataset.act]();
+    timer:toggleTimer, pick, auto:()=>setAuto(!A.on), web:()=>toggleWebPop(b), ov:overview, black:()=>curtain("black"), menu:()=>setMenu(false)})[b.dataset.act]();
 });
 function syncCtl(){
   $("cThemes").innerHTML=THEMES.map(t=>`<button type="button" title="${t.name}" aria-label="${t.name}" aria-pressed="${t.id===P.opts.theme}" data-t="${t.id}" style="background:${t.dot}"></button>`).join("");
@@ -1390,6 +1482,7 @@ document.addEventListener("keydown",e=>{
   if(["SELECT","INPUT"].includes(e.target.tagName)) return;
   const k=e.key, lk=$("layer").dataset.kind;
   if(lk && lk.startsWith("cu-")){ closeLayer(); e.preventDefault(); return; }
+  if(k==="Escape" && !$("webpop").hidden){ $("webpop").hidden=true; return; }
   if(k==="Escape"){ if(lk) closeLayer(); else if(P.pen) setPen(false); else if(!document.fullscreenElement) closeShow(); return; }
   if((k===" "||k==="Enter") && e.target.closest && e.target.closest("#mini,#ctl,#pill")) return;
   if(["ArrowRight","ArrowDown","PageDown"," ","Enter"].includes(k)){ e.preventDefault(); if(lk==="pick"||lk==="help") closeLayer(); go(1); }
@@ -1405,6 +1498,7 @@ document.addEventListener("keydown",e=>{
   else if(k==="d"||k==="D"){ const sl=P.slides[P.i]; if(sl.kind==="thuchanh"||sl.kind==="vidu"){ P.step=maxStep(sl); applyStep(); } }
   else if(k==="g"||k==="G") toggleTimer();
   else if(k==="a"||k==="A") setAuto(!A.on);
+  else if(k==="n"||k==="N") toggleWebPop($("ctl").classList.contains("collapsed")?$("pill"):$("cWeb"));
   else if(k==="r"||k==="R") pick();
   else if(k==="p"||k==="P") setPen(!P.pen);
   else if(k==="x"||k==="X") clearInk();
@@ -1427,6 +1521,7 @@ function build(){
     sel.innerHTML=`<option value="-1">${doc.sheets.length>1?`Tất cả (${doc.sheets.length} chủ đề)`:"Cả bài"}</option>`+(doc.sheets.length>1?doc.sheets.map((s,i)=>`<option value="${i}">${i+1}. ${esc(plainT(s.title))}</option>`).join(""):"");
     sel.value=[...sel.options].some(o=>o.value===prev)?prev:"-1"; sel.dataset.v=sel.value;
     $("mVD").disabled=$("mMode").value!=="luyentap";
+    $("phTopic").innerHTML=sel.innerHTML; $("phTopic").value=sel.value;
     P.slides=buildSlides(doc); P.ink={};
     const c={ct:0,vidu:0,thuchanh:0}; P.slides.forEach(s=>{ if(c[s.kind]!=null) c[s.kind]++; });
     $("stats").innerHTML=[["Slide",P.slides.length],["Công thức",c.ct],["Ví dụ",c.vidu],["Thực hành",c.thuchanh]].map(([a,b])=>`<div class="stat"><b>${b}</b><span>${a}</span></div>`).join("");
@@ -1441,6 +1536,7 @@ $("btnPlay").onclick=()=>openShow(0);
 $("btnAuto").onclick=()=>openShow(0,true);
 $("btnSample2").onclick=()=>{ $("src").value=$("sample2").textContent.trim()+"\n"; save(); $("mTopic").dataset.v="0"; $("mMode").value="luyentap"; store.set("mMode","luyentap"); build(); };
 [["mMode","value"],["mVD","checked"],["mShuffle","checked"]].forEach(([id,pr])=>{ const v=store.get(id,null); if(v!=null) $(id)[pr]=v; $(id).addEventListener("change",()=>{ store.set(id,$(id)[pr]); build(); }); });
+$("phTopic").addEventListener("change",()=>{ $("mTopic").value=$("phTopic").value; $("mTopic").dispatchEvent(new Event("change")); });
 $("mTopic").addEventListener("change",()=>{ $("mTopic").dataset.v=$("mTopic").value; store.set("mTopic",$("mTopic").value); build(); });
 [["optSpeed","value"],["optThink","value"],["optLoop","checked"]].forEach(([id,pr])=>{ const v=store.get(id,null); if(v!=null) $(id)[pr]=v; $(id).addEventListener("change",()=>store.set(id,$(id)[pr])); });
 $("btnCheck").onclick=build;
@@ -1452,7 +1548,18 @@ $("src").addEventListener("input",()=>{ save(); clearTimeout(build.t); build.t=s
 $("optTheme").innerHTML=THEMES.map(t=>`<option value="${t.id}">${t.name}</option>`).join("");
 $("optTheme").value=P.opts.theme; $("optTheme").onchange=e=>{ P.opts.theme=e.target.value; saveOpts(); };
 ["optClass","optStep","optTime"].forEach(id=>{ const v=store.get(id,null); if(v!=null) $(id).value=v; $(id).addEventListener("change",()=>{ store.set(id,$(id).value); build(); }); });
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{ document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b)); ["lesson","spec"].forEach(t=>$("tab-"+t).hidden=t!==b.dataset.tab); });
+/* ---------------- điều hướng ứng dụng ---------------- */
+const VIEWS=["soan","ai","phieu","web","help"];
+function showView(v){ if(!VIEWS.includes(v)) v="soan"; VIEWS.forEach(x=>$("v-"+x).hidden=x!==v); document.querySelectorAll(".nv").forEach(b=>b.toggleAttribute("aria-current",b.dataset.view===v)); document.querySelectorAll('.nv[aria-current]').forEach(b=>b.setAttribute("aria-current","page")); store.set("view",v); window.scrollTo({top:0}); }
+document.querySelectorAll(".nv").forEach(b=>b.onclick=()=>showView(b.dataset.view));
+$("tbPlay").onclick=()=>openShow(0); $("tbAuto").onclick=()=>openShow(0,true);
+$("tbWeb").onclick=e=>{ e.stopPropagation(); toggleWebPop(e.currentTarget); };
+showView(store.get("view","soan"));
+// cài đặt như ứng dụng (khi chạy từ web có manifest)
+let deferredInstall=null;
+window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); deferredInstall=e; $("btnInstall").hidden=false; });
+$("btnInstall").onclick=async()=>{ if(!deferredInstall) return; deferredInstall.prompt(); try{ await deferredInstall.userChoice; }catch{} deferredInstall=null; $("btnInstall").hidden=true; };
+if(window.__PWA__ && "serviceWorker" in navigator && /^https?:/.test(location.protocol)){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
 
 /* ---------------- in phiếu làm bài có dòng kẻ ---------------- */
 let dlApi=null;
@@ -1599,6 +1706,99 @@ ${host.innerHTML}
 $("btnPhieu").onclick=printPhieu;
 [["phDong","value"],["phKieu","value"],["phEco","checked"],["phVD","checked"],["phCT","checked"],["phKey","checked"],["phSchool","value"]].forEach(([id,pr])=>{ const v=store.get(id,null); if(v!=null) $(id)[pr]=v; $(id).addEventListener("change",()=>store.set(id,$(id)[pr])); });
 
+
+/* ---------------- cửa sổ trang web (¼ · ½ · toàn màn hình) ---------------- */
+const DEFAULT_SITES=[
+  {id:"anh",name:"Trình chiếu ảnh dạy học",url:"https://dayhochinhanhvtl.vercel.app/",desc:"Chiếu ảnh bài giảng, bút vẽ, nhạc nền, quay màn hình.",c:"#1414C4"},
+  {id:"lop",name:"Lớp học Tích Cực",url:"https://dojotienluc.vercel.app/",desc:"Điểm thưởng, sơ đồ lớp, trò chơi nhóm, quản lý lớp.",c:"#2E7D4F"},
+  {id:"calc",name:"Máy tính CalcES (Casio online)",url:"https://mathda.com/calculator/?utm_source=landing-page",desc:"Máy tính khoa học kiểu Casio 991ES / 991EX / ClassWiz.",c:"#D46A1C"},
+  {id:"cm",name:"Sân khấu Chúc mừng",url:"https://trinhchieusn.vercel.app/",desc:"Pháo hoa, bóng bay, nhạc chúc mừng sinh nhật, khen thưởng.",c:"#BC437A"}
+];
+let SITES=DEFAULT_SITES.concat(store.get("sites",[]));
+const W={}; let wz=80;
+function siteById(id){ return SITES.find(s=>s.id===id); }
+function geom(size,side){
+  const vw=innerWidth, vh=innerHeight;
+  if(size==="full") return {l:0,t:0,w:vw,h:vh};
+  if(size==="half") return {l:side==="l"?0:Math.round(vw/2),t:0,w:Math.round(vw/2),h:vh};
+  return {l:side==="l"?12:vw-Math.round(vw/2)-12,t:vh-Math.round(vh/2)-12,w:Math.round(vw/2),h:Math.round(vh/2)}; // ¼ màn hình
+}
+function place(w){ const g=w.pos||geom(w.size,w.side); Object.assign(w.el.style,{left:g.l+"px",top:g.t+"px",width:g.w+"px",height:g.h+"px"}); w.el.classList.toggle("full",w.size==="full");
+  w.el.querySelectorAll("[data-sz]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.sz===w.size)); }
+function front(w){ w.el.style.zIndex=++wz; }
+function openSite(id,size){
+  const s=siteById(id); if(!s) return;
+  let w=W[id];
+  if(!w){
+    const el=document.createElement("div"); el.className="win"; el.setAttribute("role","dialog"); el.setAttribute("aria-label",s.name);
+    el.innerHTML=`<div class="wt"><span class="nm">${esc(s.name)}</span>
+      <button data-sz="quarter" title="Cửa sổ ¼ màn hình">¼</button><button data-sz="half" title="Cửa sổ ½ màn hình">½</button><button data-sz="full" title="Toàn màn hình">⛶</button>
+      <button data-a="side" title="Đổi bên trái / phải">⇆</button><button data-a="reload" title="Tải lại trang">⟳</button>
+      <a href="${esc(s.url)}" target="_blank" rel="noopener" title="Mở ở tab mới">↗ Tab mới</a>
+      <button data-a="hide" title="Ẩn cửa sổ — trang vẫn giữ nguyên dữ liệu">— Ẩn</button></div>
+      <iframe src="${esc(s.url)}" title="${esc(s.name)}" allow="fullscreen; autoplay; clipboard-read; clipboard-write; microphone; camera; display-capture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="shield"></div>`;
+    $("wins").appendChild(el);
+    w=W[id]={el,size:size||"half",side:"r",pos:null};
+    el.addEventListener("pointerdown",()=>front(w));
+    el.querySelector(".wt").addEventListener("click",e=>{
+      const b=e.target.closest("button"); if(!b) return;
+      if(b.dataset.sz){ w.size=b.dataset.sz; w.pos=null; place(w); store.set("wsize-"+id,w.size); }
+      else if(b.dataset.a==="hide") hideSite(id);
+      else if(b.dataset.a==="side"){ w.side=w.side==="r"?"l":"r"; w.pos=null; place(w); }
+      else if(b.dataset.a==="reload"){ const f=el.querySelector("iframe"); f.src=f.src; }
+    });
+    drag(w);
+  }
+  if(size){ w.size=size; w.pos=null; store.set("wsize-"+id,size); }
+  w.el.classList.remove("hid"); place(w); front(w); syncWeb();
+}
+function hideSite(id){ const w=W[id]; if(!w) return; w.el.classList.add("hid"); syncWeb(); try{ (!$("show").hidden?$("show"):document.body).focus(); }catch{} }
+function toggleSite(id,size){ const w=W[id]; if(w && !w.el.classList.contains("hid") && (!size||size===w.size)) hideSite(id); else openSite(id,size||store.get("wsize-"+id,"half")); }
+function drag(w){
+  const bar=w.el.querySelector(".wt"); let sx,sy,ox,oy,on=false;
+  bar.addEventListener("pointerdown",e=>{ if(e.target.closest("button,a")||w.size==="full") return; on=true; bar.setPointerCapture(e.pointerId);
+    const r=w.el.getBoundingClientRect(); sx=e.clientX; sy=e.clientY; ox=r.left; oy=r.top; w.pos={l:r.left,t:r.top,w:r.width,h:r.height}; document.body.classList.add("dragging"); });
+  bar.addEventListener("pointermove",e=>{ if(!on) return; w.pos.l=Math.min(innerWidth-80,Math.max(-w.pos.w+80,ox+e.clientX-sx)); w.pos.t=Math.min(innerHeight-40,Math.max(0,oy+e.clientY-sy)); place(w); });
+  const end=()=>{ on=false; document.body.classList.remove("dragging"); };
+  bar.addEventListener("pointerup",end); bar.addEventListener("pointercancel",end);
+}
+window.addEventListener("resize",()=>Object.values(W).forEach(w=>{ if(!w.pos) place(w); }));
+// thẻ trang web ở mục "Trang web"
+function renderSites(){
+  $("sitesList").innerHTML=SITES.map(s=>{ const w=W[s.id], st=w?(w.el.classList.contains("hid")?"Đang chạy ngầm (đã ẩn)":"Đang mở"):"";
+    return `<div class="site" style="--sc:${s.c||"#5B2C83"}"><h3>${esc(s.name)}</h3><p>${esc(s.desc||s.url)}</p>${st?`<span class="st">● ${st}</span>`:""}
+      <div class="row"><button data-o="${s.id}" data-s="quarter">¼ màn hình</button><button data-o="${s.id}" data-s="half">½ màn hình</button><button data-o="${s.id}" data-s="full">Toàn màn hình</button>
+      <a class="lnk" href="${esc(s.url)}" target="_blank" rel="noopener">↗ Tab mới</a>${s.custom?`<button class="rm" data-rm="${s.id}">Xoá</button>`:""}</div></div>`; }).join("");
+}
+$("sitesList").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.o) openSite(b.dataset.o,b.dataset.s);
+  if(b.dataset.rm){ if(W[b.dataset.rm]){ W[b.dataset.rm].el.remove(); delete W[b.dataset.rm]; } SITES=SITES.filter(s=>s.id!==b.dataset.rm); store.set("sites",SITES.filter(s=>s.custom)); renderSites(); } });
+$("nsAdd").onclick=()=>{ let u=$("nsUrl").value.trim(), n=$("nsName").value.trim(); if(!u){ toast("Nhập địa chỉ trang web."); return; } if(!/^https?:\/\//i.test(u)) u="https://"+u;
+  try{ new URL(u); }catch{ toast("Địa chỉ chưa đúng."); return; }
+  SITES.push({id:"u"+Date.now(),name:n||new URL(u).hostname,url:u,desc:u,c:"#555555",custom:true}); store.set("sites",SITES.filter(s=>s.custom)); $("nsUrl").value=""; $("nsName").value=""; renderSites(); toast("Đã thêm trang web."); };
+// menu nhanh khi trình chiếu
+function toggleWebPop(anchor){
+  const p=$("webpop");
+  if(!p.hidden){ p.hidden=true; return; }
+  p.innerHTML=`<div class="hd">Trang web dạy học · bấm lại để ẩn</div>`+SITES.map(s=>{ const w=W[s.id], on=w&&!w.el.classList.contains("hid");
+    return `<div class="wr"><span class="nm${on?" on":""}">${on?"● ":w?"◌ ":""}${esc(s.name)}<small>${w?(on?"đang mở":"đã ẩn, giữ dữ liệu"):""}</small></span>
+      <button data-o="${s.id}" data-s="quarter" title="¼ màn hình">¼</button><button data-o="${s.id}" data-s="half" title="½ màn hình">½</button><button data-o="${s.id}" data-s="full" title="Toàn màn hình">⛶</button></div>`; }).join("")
+    +(Object.values(W).some(w=>!w.el.classList.contains("hid"))?`<div class="wr"><span class="nm"></span><span></span><span></span><button data-hideall="1">Ẩn tất cả</button></div>`:"");
+  p.hidden=false;
+  const r=(anchor||$("tbWeb")).getBoundingClientRect(), pw=Math.min(360,innerWidth-24);
+  p.style.left=Math.max(12,Math.min(innerWidth-pw-12,r.left))+"px";
+  if(r.top>innerHeight/2){ p.style.top=""; p.style.bottom=(innerHeight-r.top+8)+"px"; } else { p.style.bottom=""; p.style.top=(r.bottom+8)+"px"; }
+}
+$("webpop").addEventListener("click",e=>{ e.stopPropagation(); const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.hideall){ Object.keys(W).forEach(hideSite); $("webpop").hidden=true; return; }
+  const w=W[b.dataset.o];
+  if(w && !w.el.classList.contains("hid") && w.size===b.dataset.s) hideSite(b.dataset.o); else openSite(b.dataset.o,b.dataset.s);
+  $("webpop").hidden=true; });
+document.addEventListener("click",e=>{ if(!$("webpop").hidden && !e.target.closest("#webpop,#cWeb,#tbWeb,#mini,#pill")) $("webpop").hidden=true; });
+$("cWeb").onclick=e=>{ e.stopPropagation(); toggleWebPop(e.currentTarget); };
+function syncWeb(){ renderSites(); const n=Object.values(W).filter(w=>!w.el.classList.contains("hid")).length; $("cWeb").textContent=n?`🌐 Web (${n})`:"🌐 Web"; }
+renderSites();
+
 /* ---------------- prompt AI ---------------- */
 function prompt(){
   const L=$("pLesson").value.trim()||"(tên bài)", G=$("pGrade").value, B=$("pBook").value.trim()||"Kết nối tri thức", vd=$("pVD").value, tn=+$("pTN").value, ds=+$("pDS").value, tl=+$("pTL").value;
@@ -1666,8 +1866,8 @@ function savePrompt(){ store.set("prompt",Object.fromEntries(["pKind","pLesson",
 ["pKind","pLesson","pGrade","pBook","pVD","pTN","pDS","pTL"].forEach(id=>$(id).addEventListener("change",savePrompt));
 $("btnShowPrompt").onclick=()=>{ const h=!$("prompt").hidden; $("prompt").hidden=h; $("btnShowPrompt").setAttribute("aria-expanded",!h); $("btnShowPrompt").textContent=h?"Xem prompt":"Ẩn prompt"; };
 $("btnPasteAI").onclick=async()=>{
-  try{ const txt=await navigator.clipboard.readText(); if(!txt.trim()) throw 0; $("src").value=cleanAI(txt); save(); build(); toast("Đã dán kết quả AI."); $("src").scrollIntoView({block:"nearest"}); }
-  catch{ $("src").value=""; $("src").focus(); toast("Bấm Ctrl+V (Mac: Cmd+V) để dán kết quả AI vào ô nội dung."); }
+  try{ const txt=await navigator.clipboard.readText(); if(!txt.trim()) throw 0; $("src").value=cleanAI(txt); save(); build(); showView("soan"); toast("Đã dán kết quả AI."); $("src").scrollIntoView({block:"nearest"}); }
+  catch{ showView("soan"); $("src").value=""; $("src").focus(); toast("Bấm Ctrl+V (Mac: Cmd+V) để dán kết quả AI vào ô nội dung."); }
 };
 // loại bỏ ```markdown ... ``` và lời dẫn AI thêm vào
 function cleanAI(s){
@@ -1683,8 +1883,7 @@ refreshPrompt();
 
 /* ---------------- khởi động ---------------- */
 $("src").value=store.get("src","")||($("sample").textContent.trim()+"\n");
-$("aiBox").open = store.get("aiOpen", true);
-$("aiBox").addEventListener("toggle",()=>store.set("aiOpen",$("aiBox").open));
+
 build();
 })();
 </script>
