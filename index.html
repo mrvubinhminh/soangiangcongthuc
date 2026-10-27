@@ -1,19 +1,3 @@
-<!doctype html>
-<html lang="vi">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#b8202c">
-<meta name="description" content="Ứng dụng dạy học Toán của thầy Vũ Tiến Lực – Trường THPT Nguyễn Hữu Cảnh: trình chiếu công thức, ví dụ, luyện tập, in phiếu, mở trang web dạy học.">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Dạy học Toán">
-<script>window.__PWA__=true;</script>
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}</style>
-</head>
-<body>
 <title>Dạy học Toán – Thầy Vũ Tiến Lực</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -163,6 +147,20 @@ body{margin:0}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .lib-chips button{padding:4px 10px;border-radius:999px;font-size:.78rem}
 .lib-chips button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.lrow{display:flex;gap:6px;align-items:stretch}
+.lrow .li{flex:1;min-width:0}
+.lpick{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:34px;flex:none;border:1px solid var(--line);border-radius:8px;background:var(--panel);cursor:pointer}
+.lpick input{width:17px;height:17px;margin:0;accent-color:var(--accent);cursor:pointer}
+.lpick span{font:800 .72rem var(--f-ui);color:var(--accent);min-height:1em}
+.pickbar{display:flex;flex-direction:column;gap:10px;border:2px solid var(--accent)}
+.pickbar .ph{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pickbar .ph b{font-size:1rem}
+.pickbar ol{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px;counter-reset:pk}
+.pickbar li{display:flex;align-items:center;gap:4px;padding:3px 4px 3px 10px;border:1px solid var(--line);border-left:4px solid var(--kc,var(--line));border-radius:999px;background:var(--panel);font-size:.82rem;max-width:100%}
+.pickbar li::before{counter-increment:pk;content:counter(pk) ".";font-weight:800;color:var(--accent)}
+.pickbar li span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:26ch}
+.pickbar li button{padding:1px 7px;border-radius:999px;font-size:.78rem;line-height:1.4}
+.pickbar .opts{display:flex;flex-wrap:wrap;gap:12px;font-size:.84rem;color:var(--muted)}
 .lib-sync{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted);margin-left:auto}
 .lib-sync i{width:9px;height:9px;border-radius:50%;background:var(--line)}
 .lib-sync.ok i{background:var(--ok)}.lib-sync.err i{background:var(--err)}.lib-sync.busy i{background:var(--warn);animation:pulse 1s infinite}
@@ -562,10 +560,12 @@ body.zooming #ctl,body.zooming #pill,body.zooming #mini,body.zooming #webpop{vis
           <input id="libQ" type="search" placeholder="Tìm tên bài, từ khoá, nội dung…  (phím /)" aria-label="Tìm trong thư viện">
           <select id="libGrade" aria-label="Lọc theo lớp"></select>
           <select id="libType" aria-label="Lọc theo loại bài"></select>
+          <button type="button" id="libPickAll" title="Chọn mọi bài đang hiện trong danh sách để chiếu liền mạch">☑ Chọn tất cả để chiếu</button>
           <select id="libSort" aria-label="Sắp xếp"><option value="new">Mới cập nhật</option><option value="name">Tên A→Z</option><option value="grade">Theo lớp, mã bài</option></select>
         </div>
         <div class="chips lib-chips" id="libChips"></div>
       </div>
+      <div class="pickbar card" id="libPick" hidden></div>
       <div class="lib-drop" id="libDrop" hidden>Thả file .md / .json vào đây để thêm vào thư viện</div>
       <div class="lib-cols">
         <div class="lib-list" id="libList" role="listbox" aria-label="Danh sách bài"></div>
@@ -1702,7 +1702,7 @@ async function render(){
   const sl=P.slides[P.i]; if(!sl) return;
   const st=$("stage"); st.dataset.theme=P.opts.theme; st.dataset.bold=String(P.opts.bold);
   st.style.setProperty("--zoom",P.opts.zoom); st.style.setProperty("--c",sl.c);
-  $("slideHost").innerHTML=slideHTML(sl)+`<div class="sl-foot"><span>${esc(KLABEL[sl.kind])}</span><span>${P.i+1} / ${P.slides.length}</span></div><div class="sl-prog" style="width:${(P.i+1)/P.slides.length*100}%"></div>`;
+  $("slideHost").innerHTML=slideHTML(sl)+`<div class="sl-foot"><span>${sl.lesson?esc(sl.lesson)+" · ":""}${esc(KLABEL[sl.kind])}</span><span>${P.i+1} / ${P.slides.length}</span></div><div class="sl-prog" style="width:${(P.i+1)/P.slides.length*100}%"></div>`;
   $("slideHost").querySelectorAll(".mfig img").forEach(im=>{ const setAr=()=>{ if(im.naturalWidth){ im.closest(".mfig").dataset.ar=(im.naturalWidth/im.naturalHeight).toFixed(2); mediaUpdate(); } }; if(im.complete) setAr(); else im.addEventListener("load",setAr,{once:true}); });
   applyStep(); syncTimerChip(); preloadNext();
   $("cCnt").textContent=`${P.i+1} / ${P.slides.length}`;
@@ -1821,7 +1821,7 @@ document.addEventListener("click",e=>{ if(e.target.id==="cClear") clearInk(); if
 function closeLayer(){ $("layer").innerHTML=""; $("layer").dataset.kind=""; }
 function layer(kind,html){ if($("layer").dataset.kind===kind){ closeLayer(); return false; } $("layer").innerHTML=html; $("layer").dataset.kind=kind; return true; }
 function overview(){
-  layer("ov",`<div class="ov">${P.slides.map((s,k)=>`<button data-j="${k}" class="${k===P.i?"cur":""}" style="--kc:${s.kind==="cover"?"#5B2C83":s.c}"><small>${k+1} · ${KLABEL[s.kind]}</small>${esc(String(s.title).replace(/\$[^$]*\$/g,"…"))}</button>`).join("")}</div>`);
+  layer("ov",`<div class="ov">${P.slides.map((s,k)=>`<button data-j="${k}" class="${k===P.i?"cur":""}" style="--kc:${s.kind==="cover"?"#5B2C83":s.c}"><small>${k+1} · ${s.lstart?"▸ "+esc(s.lesson)+" · ":""}${KLABEL[s.kind]}</small>${esc(String(s.title).replace(/\$[^$]*\$/g,"…"))}</button>`).join("")}</div>`);
 }
 function curtain(color){ layer("cu-"+color,`<div class="curtain ${color}">Bấm phím bất kỳ để tiếp tục</div>`); }
 function pick(){
@@ -1832,22 +1832,23 @@ function pick(){
   let k=0; const roll=setInterval(()=>{ $("pnum") && ($("pnum").textContent=1+Math.floor(Math.random()*N)); if(++k>14){ clearInterval(roll); $("pnum") && ($("pnum").textContent=num); } },55);
 }
 const KEYS=[["→ Space Enter","Tiếp / hiện bước tiếp theo"],["← Backspace","Lùi"],["Home / End","Slide đầu / cuối"],["O","Tổng quan, chọn slide"],["H","Thu gọn / hiện menu"],["F","Toàn màn hình"],["L","Lấp đầy màn hình / giữ khung 16:9"],
-  ["T","Đổi kiểu màu"],["B","Đổi độ đậm"],["+ / −","Chữ to / nhỏ"],["D","Hiện đáp án câu thực hành"],["G","Bật / dừng đồng hồ"],["I","Hiện / ẩn khung hình minh hoạ"],["V","Phóng to ảnh toàn màn hình (cuộn chuột / kéo để xem chi tiết)"],["N","Mở trang web dạy học (cửa sổ ¼, ½, toàn màn hình)"],["A","Bật / tắt tự động chạy"],["R","Bốc thăm học sinh"],
+  ["T","Đổi kiểu màu"],["B","Đổi độ đậm"],["+ / −","Chữ to / nhỏ"],["D","Hiện đáp án câu thực hành"],["G","Bật / dừng đồng hồ"],["I","Hiện / ẩn khung hình minh hoạ"],["[  /  ]","Chiếu nhiều bài: về bài trước / sang bài sau"],["V","Phóng to ảnh toàn màn hình (cuộn chuột / kéo để xem chi tiết)"],["N","Mở trang web dạy học (cửa sổ ¼, ½, toàn màn hình)"],["A","Bật / tắt tự động chạy"],["R","Bốc thăm học sinh"],
   ["P","Bật / tắt bút vẽ"],["Z / X","Xoá nét cuối / xoá hết nét"],[".  /  W","Màn đen / màn trắng"],["?","Bảng phím tắt"],["Esc","Đóng lớp phủ / thoát"]];
 function help(){ layer("help",`<div class="help"><h3>Phím tắt</h3><div class="g">${KEYS.map(k=>`<div><kbd>${esc(k[0])}</kbd> ${esc(k[1])}</div>`).join("")}</div></div>`); }
 $("keysList").innerHTML=KEYS.map(k=>`<div><kbd>${esc(k[0])}</kbd> ${esc(k[1])}</div>`).join("");
 $("layer").addEventListener("click",e=>{ e.stopPropagation(); const b=e.target.closest("[data-j]"); if(b) jump(+b.dataset.j); else if(!e.target.closest(".help")) closeLayer(); });
 
 /* ---------------- điều khiển ---------------- */
-function openShow(at=0,auto=false){
-  if(!build()) return;
+function openShow(at=0,auto=false,pre=null){
+  if(pre){ P.slides=pre; P.ink={}; P.mhide.clear(); P.playlist=true; }
+  else { P.playlist=false; if(!build()) return; }
   if(!P.slides.length){ toast("Chưa có slide nào."); return; }
   P.i=Math.min(at,P.slides.length-1); P.step=(P.slides[P.i].kind==="ct"&&P.opts.reveal)?1:0; P.timers={}; closeLayer(); setPen(false);
   $("show").hidden=false; $("ctl").hidden=false; document.body.style.overflow="hidden";
   applyFit(); A.on=false; syncCtl(); setMenu(!!P.opts.menuHidden); sizeInk(); setAuto(auto); render(); poke();
   try{ $("show").focus(); }catch{}
 }
-function closeShow(){ setAuto(false); $("show").hidden=true; $("ctl").hidden=true; $("pill").hidden=true; document.body.style.overflow=""; setPen(false); Object.values(P.timers).forEach(t=>t.run=false); if(document.fullscreenElement) document.exitFullscreen().catch(()=>{}); }
+function closeShow(){ if(P.playlist){ P.playlist=false; setTimeout(build,0); } setAuto(false); $("show").hidden=true; $("ctl").hidden=true; $("pill").hidden=true; document.body.style.overflow=""; setPen(false); Object.values(P.timers).forEach(t=>t.run=false); if(document.fullscreenElement) document.exitFullscreen().catch(()=>{}); }
 function setMenu(hide){ $("ctl").classList.toggle("collapsed",hide); $("pill").hidden=!hide||$("show").hidden; if(!hide||$("show").hidden) setMini(false); P.opts.menuHidden=hide; saveOpts(); }
 function setMini(open){ $("mini").hidden=!open; $("pill").setAttribute("aria-expanded",open); $("pill").textContent=open?"✕":"✎"; $("pill").title=open?"Đóng công cụ":"Công cụ dạy học"; }
 $("miniPens").innerHTML=PENS.map(p=>`<button type="button" data-c="${p.c}" title="${p.hl?"Bút dạ quang":"Màu bút"}" aria-label="${p.hl?"Bút dạ quang":"Màu bút"}" style="background:${p.c}${p.hl?";opacity:.75":""}"></button>`).join("");
@@ -1953,6 +1954,7 @@ document.addEventListener("keydown",e=>{
   else if(k==="g"||k==="G") toggleTimer();
   else if(k==="a"||k==="A") setAuto(!A.on);
   else if(k==="i"||k==="I") toggleMedia();
+  else if((k==="]"||k==="[") && P.playlist){ const st=P.slides.map((s,j)=>s.lstart?j:-1).filter(j=>j>=0); const nx=k==="]"?st.find(j=>j>P.i):[...st].reverse().find(j=>j<P.i); if(nx!=null) jump(nx); else toast(k==="]"?"Đang ở bài cuối.":"Đang ở bài đầu."); }
   else if(k==="v"||k==="V"){ const list=zoomList(); if(!list.length){ toast("Slide này không có ảnh để phóng to"); } else { const on=list.findIndex(x=>x.el.classList.contains("on")); zoomOpen(list,Math.max(0,on)); } }
   else if(k==="n"||k==="N") toggleWebPop($("ctl").classList.contains("collapsed")?$("pill"):$("cWeb"));
   else if(k==="r"||k==="R") pick();
@@ -2536,7 +2538,7 @@ edPos();
    (2) lưu trên máy (localStorage) nên tải lại trang không mất; (3) đọc file có BOM / xuống dòng Windows; (4) tải nhiều file, cả thư mục, kéo thả. */
 const QTYPES=Object.values(KINDS).map(k=>k.chip);
 const QCOLOR={"Bài giảng mới":"#1414C4","Khởi động 5 phút":"#D46A1C","Khám phá kiến thức":"#5B2C83","Tiết luyện tập":"#2E7D4F","Phân hoá 3 mức":"#00897B","Sửa sai lầm":"#B3261E","Toán thực tế":"#8D6E00","Trò chơi thi đua":"#C2185B","Ôn kiểm tra":"#37474F"};
-const LIB={items:store.get("lib",null), tomb:store.get("libTomb",[]), sel:store.get("libSel",null), cur:store.get("libCur",null), q:"", qt:"", edit:false, delAsk:false,
+const LIB={pick:[],items:store.get("lib",null), tomb:store.get("libTomb",[]), sel:store.get("libSel",null), cur:store.get("libCur",null), q:"", qt:"", edit:false, delAsk:false,
   url:store.get("libUrl",""), auto:store.get("libAuto",false), busy:false, lastWrite:0, timer:null};
 const nowStamp=()=>{ const d=new Date(),z=n=>String(n).padStart(2,"0"); return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}`; };
 const tsOf=s=>{ s=String(s||""); return Date.parse(s.replace(" ","T"))||Date.parse(s)||0; };
@@ -2581,18 +2583,20 @@ function sameLesson(a,b){ return a.title.trim().toLowerCase()===b.title.trim().t
 async function libImport(fileList){
   const files=[...fileList].filter(f=>/\.(md|markdown|txt|json)$/i.test(f.name));
   if(!files.length){ toast("Không có file .md / .txt / .json nào để thêm."); return; }
-  let add=0, upd=0, same=0, bad=[]; let last=null;
+  let add=0, upd=0, same=0, bad=[]; let last=null; const got=[];
   for(const f of files){
     let txt; try{ txt=await f.text(); }catch{ bad.push(f.name); continue; }
     let arr; try{ arr=/\.json$/i.test(f.name)?jsonToLessons(f.name,txt):[mdToLesson(f.webkitRelativePath||f.name,txt)]; }catch{ bad.push(f.name); continue; }
     if(!arr.length){ bad.push(f.name); continue; }
     for(const L of arr){
       const ex=LIB.items.find(x=>x.id===L.id)||LIB.items.find(x=>sameLesson(x,L));
-      if(ex){ if(ex.content.trim()===L.content.trim()){ same++; last=ex; continue; } Object.assign(ex,{...L,id:ex.id,updatedAt:nowStamp()}); upd++; last=ex; sheetUpsert(ex); }
-      else { LIB.items.unshift(L); add++; last=L; sheetUpsert(L); }
+      if(ex){ got.push(ex.id); if(ex.content.trim()===L.content.trim()){ same++; last=ex; continue; } Object.assign(ex,{...L,id:ex.id,updatedAt:nowStamp()}); upd++; last=ex; sheetUpsert(ex); }
+      else { LIB.items.unshift(L); add++; last=L; got.push(L.id); sheetUpsert(L); }
     }
   }
+  const uniq=[...new Set(got)]; if(uniq.length>1) LIB.pick=uniq;
   libSave(); if(last){ LIB.sel=last.id; store.set("libSel",LIB.sel); } LIB.q=""; $("libQ").value=""; LIB.qt=""; $("libGrade").value=""; libRender();
+  if(uniq.length>1) setTimeout(()=>{ if(!$("show").hidden) return; toast(`Đã chọn sẵn ${uniq.length} bài vừa tải — bấm “▶ Chiếu ${uniq.length} bài liền mạch”.`); $("libPick").scrollIntoView({block:"nearest",behavior:"smooth"}); },2600);
   toast([add&&`Đã thêm ${add} bài`,upd&&`cập nhật ${upd} bài trùng tên`,same&&`${same} bài đã có sẵn`,bad.length&&`không đọc được: ${bad.slice(0,3).join(", ")}${bad.length>3?"…":""}`].filter(Boolean).join(" · ")||"Không có gì thay đổi.");
 }
 function libFiltered(){
@@ -2612,9 +2616,10 @@ function libRender(){
   const list=libFiltered();
   if(!list.some(x=>x.id===LIB.sel)) LIB.sel=list[0]?list[0].id:null;
   $("libList").innerHTML=list.length?list.map(x=>{ const gm=/(\d+)/.exec(x.grade);
-    return `<button type="button" class="li" role="option" data-id="${esc(x.id)}" aria-selected="${x.id===LIB.sel}" style="--kc:${QCOLOR[x.quickType]||"var(--line)"}"><span class="g">${gm?`Lớp<b>${gm[1]}</b>`:esc(x.grade||"—")}</span><span class="tt">${esc(x.lessonCode?x.lessonCode+": ":"")}${esc(x.title)}${x.id===LIB.cur?" ✎":""}</span><span class="mt"><em>${esc(x.quickType||"")}</em>${x.note?" · "+esc(x.note):""} · ${esc(x.updatedAt.slice(0,16))}</span></button>`; }).join("")
+    const pk=LIB.pick.indexOf(x.id);
+    return `<div class="lrow"><label class="lpick" title="Chọn để chiếu nhiều bài liền mạch"><input type="checkbox" data-pick="${esc(x.id)}" ${pk>=0?"checked":""} aria-label="Chọn bài ${esc(x.title)}"><span>${pk>=0?pk+1:""}</span></label><button type="button" class="li" role="option" data-id="${esc(x.id)}" aria-selected="${x.id===LIB.sel}" style="--kc:${QCOLOR[x.quickType]||"var(--line)"}"><span class="g">${gm?`Lớp<b>${gm[1]}</b>`:esc(x.grade||"—")}</span><span class="tt">${esc(x.lessonCode?x.lessonCode+": ":"")}${esc(x.title)}${x.id===LIB.cur?" ✎":""}</span><span class="mt"><em>${esc(x.quickType||"")}</em>${x.note?" · "+esc(x.note):""} · ${esc(x.updatedAt.slice(0,16))}</span></button></div>`; }).join("")
     : `<div class="lib-empty">${LIB.items.length?"Không có bài nào khớp bộ lọc.":"Thư viện trống. Bấm <b>⤒ Tải lên file .md…</b> hoặc kéo thả file vào đây."}</div>`;
-  libDetail();
+  libPickBar(); libDetail();
 }
 function libDetail(){
   const x=LIB.items.find(i=>i.id===LIB.sel), box=$("libDetail");
@@ -2694,6 +2699,75 @@ document.addEventListener("dragleave",()=>{ if(dragN>0 && --dragN===0) $("libDro
 document.addEventListener("dragover",e=>{ if(onLib()&&e.dataTransfer&&[...e.dataTransfer.types].includes("Files")) e.preventDefault(); });
 document.addEventListener("drop",e=>{ if(!onLib()) return; e.preventDefault(); dragN=0; $("libDrop").hidden=true; if(e.dataTransfer.files.length) libImport(e.dataTransfer.files); });
 document.addEventListener("keydown",e=>{ if(e.key==="/" && onLib() && !["INPUT","TEXTAREA","SELECT"].includes(document.activeElement.tagName)){ e.preventDefault(); $("libQ").focus(); } });
+
+/* ---- chiếu nhiều bài liền mạch (chọn trong thư viện hoặc tải nhiều file cùng lúc) ---- */
+function libPickBar(){
+  LIB.pick=LIB.pick.filter(id=>LIB.items.some(x=>x.id===id));
+  const box=$("libPick"), n=LIB.pick.length; box.hidden=!n; if(!n){ box.innerHTML=""; return; }
+  const ls=LIB.pick.map(id=>LIB.items.find(x=>x.id===id));
+  const ms=store.get("pickMode","own");
+  box.innerHTML=`<div class="ph"><b>Chiếu nhiều bài · đã chọn ${n} bài</b><span class="hint">Thứ tự chiếu theo số; dùng ↑ ↓ để đổi thứ tự. Khi chiếu: phím <kbd>[</kbd> <kbd>]</kbd> nhảy bài trước / sau.</span></div>
+    <ol>${ls.map((x,k)=>`<li style="--kc:${QCOLOR[x.quickType]||"var(--line)"}"><span title="${esc(x.title)}">${esc(x.lessonCode?x.lessonCode+": ":"")}${esc(x.title)}</span><button type="button" data-pm="up" data-k="${k}" ${k?"":"disabled"} aria-label="Lên">↑</button><button type="button" data-pm="down" data-k="${k}" ${k<n-1?"":"disabled"} aria-label="Xuống">↓</button><button type="button" data-pm="rm" data-k="${k}" aria-label="Bỏ">✕</button></li>`).join("")}</ol>
+    <div class="opts"><label class="chk"><input type="radio" name="pkMode" value="own" ${ms==="own"?"checked":""}> Mỗi bài chiếu theo loại bài của nó</label><label class="chk"><input type="radio" name="pkMode" value="cur" ${ms==="cur"?"checked":""}> Tất cả theo “Kiểu bài” đang chọn ở trang Soạn</label></div>
+    <div class="row"><button type="button" class="primary" data-pm="play">▶ Chiếu ${n} bài liền mạch</button><button type="button" class="auto" data-pm="auto">⏵ Chiếu tự động</button><button type="button" data-pm="merge" title="Gộp các bài đã chọn thành một bộ trong ô soạn (để sửa, in phiếu cả bộ)">✎ Gộp thành một bộ để soạn / in phiếu</button><button type="button" data-pm="clear">Bỏ chọn</button></div>`;
+}
+$("libPick").addEventListener("change",e=>{ if(e.target.name==="pkMode") store.set("pickMode",e.target.value); });
+$("libPick").addEventListener("click",e=>{ const b=e.target.closest("[data-pm]"); if(!b) return; const a=b.dataset.pm, k=+b.dataset.k;
+  if(a==="up"&&k>0){ [LIB.pick[k-1],LIB.pick[k]]=[LIB.pick[k],LIB.pick[k-1]]; libRender(); }
+  else if(a==="down"&&k<LIB.pick.length-1){ [LIB.pick[k+1],LIB.pick[k]]=[LIB.pick[k],LIB.pick[k+1]]; libRender(); }
+  else if(a==="rm"){ LIB.pick.splice(k,1); libRender(); }
+  else if(a==="clear"){ LIB.pick=[]; libRender(); }
+  else if(a==="play"||a==="auto") playMany(LIB.pick,a==="auto");
+  else if(a==="merge") mergeMany(LIB.pick);
+});
+$("libList").addEventListener("change",e=>{ const c=e.target.closest("[data-pick]"); if(!c) return; const id=c.dataset.pick;
+  if(c.checked){ if(!LIB.pick.includes(id)) LIB.pick.push(id); } else LIB.pick=LIB.pick.filter(x=>x!==id); libRender(); });
+$("libPickAll").onclick=()=>{ const ids=libFiltered().map(x=>x.id); const all=ids.every(id=>LIB.pick.includes(id)); LIB.pick= all ? LIB.pick.filter(id=>!ids.includes(id)) : [...LIB.pick,...ids.filter(id=>!LIB.pick.includes(id))]; libRender(); };
+function slidesOfLesson(x,ownMode){
+  const keepMode=$("mMode").value, keepTopic=$("mTopic").value;
+  try{
+    const {doc}=parseAny(x.content);
+    if(ownMode){ const K=Object.values(KINDS).find(k=>k.chip===x.quickType); if(K) $("mMode").value=K.mode; }
+    $("mTopic").value="-1";
+    return buildSlides(doc);
+  } finally { $("mMode").value=keepMode; $("mTopic").value=keepTopic; }
+}
+function playMany(ids,auto){
+  const ls=ids.map(id=>LIB.items.find(x=>x.id===id)).filter(Boolean); if(!ls.length) return;
+  const own=store.get("pickMode","own")==="own", out=[], bad=[];
+  if(ls.length>1) out.push({kind:"cover",kicker:`Chuỗi ${ls.length} bài`,title:"Nội dung buổi học",chips:ls.map((x,k)=>({t:`${k+1}. ${x.title}`,c:QCOLOR[x.quickType]||PALETTE[CYCLE[k%CYCLE.length]]})),meta:[...new Set(ls.map(x=>x.grade).filter(Boolean))].join(" · "),c:"#5B2C83"});
+  ls.forEach((x,k)=>{
+    let S; try{ S=slidesOfLesson(x,own); }catch(e){ bad.push(x.title); return; }
+    if(!S.length){ bad.push(x.title); return; }
+    const tag=`Bài ${k+1}/${ls.length}`;
+    S.forEach(s=>{ s.lesson=tag; });
+    if(S[0].kind==="cover"){ S[0]={...S[0],kicker:`${tag}${S[0].kicker?" · "+S[0].kicker:""}`}; S[0].lstart=true; }
+    else S.unshift({kind:"cover",kicker:tag,title:x.title,chips:[],meta:[x.grade,x.quickType].filter(Boolean).join(" · "),c:QCOLOR[x.quickType]||"#5B2C83",lesson:tag,lstart:true});
+    out.push(...S);
+  });
+  if(bad.length) toast(`Bỏ qua ${bad.length} bài chưa đúng cú pháp hoặc trống: ${bad.slice(0,2).join(", ")}${bad.length>2?"…":""}`);
+  if(!out.length) return;
+  openShow(0,auto,out);
+}
+// gộp nhiều bài thành 1 bộ .md: mỗi bài thành chủ đề “#”, bỏ dòng cấu hình @, đổi mã ảnh nhúng để không trùng
+function mergeMany(ids){
+  const ls=ids.map(id=>LIB.items.find(x=>x.id===id)).filter(Boolean); const parts=[], refs=[], skip=[];
+  ls.forEach((x,k)=>{
+    let c=String(x.content).replace(/\r/g,"");
+    if(c.trim().startsWith("{")){ skip.push(x.title); return; }
+    const own=[]; c=c.replace(/^\s*\[@([\w-]+)\]:\s*(\S+)\s*$/gm,(m,id,v)=>{ own.push(`[@b${k+1}${id}]: ${v}`); return ""; }).replace(/\]\(@([\w-]+)\)/g,(m,id)=>`](@b${k+1}${id})`).replace(/<!-- ảnh nhúng[^\n]*-->/g,"");
+    c=c.split("\n").filter(l=>!/^\s*@[^:]{1,25}:/.test(l)).join("\n").trim();
+    if(!/^#\s/.test(c)) c=`# ${x.title}\n${c}`;
+    parts.push(c); refs.push(...own);
+  });
+  if(!parts.length){ toast("Không có bài .md nào để gộp."); return; }
+  const cur=$("src").value.trim();
+  let saved=false;
+  if(cur && !LIB.items.some(x=>x.content.trim()===cur)){ saved=true; const d=mdToLesson("ban-nhap.md",cur); d.title+=" (bản nháp)"; d.note="Tự lưu trước khi gộp bộ bài"; LIB.items.unshift(d); libSave(); sheetUpsert(d); }
+  const text=`@tên bộ: Chuỗi ${parts.length} bài\n\n`+parts.join("\n\n")+(refs.length?"\n\n<"+"!-- ảnh nhúng (đừng sửa các dòng dưới) -->\n"+refs.join("\n")+"\n":"\n");
+  $("src").value=text; LIB.cur=null; store.set("libCur",null); save(); $("mTopic").dataset.v="-1"; build(); showView("soan");
+  toast(`Đã gộp ${parts.length} bài thành một bộ (mỗi bài là một chủ đề)${skip.length?` · bỏ qua ${skip.length} bài dạng JSON`:""}${saved?" · bài đang soạn trước đó đã lưu vào thư viện":""}.`);
+}
 
 /* ---- Google Sheets: GET để tải, POST (no-cors) UPSERT / DELETE / SYNC_ALL – cùng giao thức với SmartLesson MD Pro ---- */
 $("libGas").textContent=$("gasCode").textContent.trim();
