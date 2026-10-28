@@ -139,15 +139,16 @@ body{margin:0}
 body.vmode #ctl,body.vmode #pill,body.vmode #mini,body.vmode .th-hint,body.vmode .mtools,body.vmode .mrestore,body.vmode #autoBar{display:none!important}
 body.vmode #show,body.vmode #stage{cursor:none}
 .vhide{opacity:0!important;transform:translateY(1.4cqh);transition:none!important}
-.vshow{animation:vline .9s cubic-bezier(.2,.7,.2,1) both}
+.vshow{animation:vline calc(.9s / var(--vr,1)) cubic-bezier(.2,.7,.2,1) both}
+.vthink.vrate{top:auto;bottom:6cqh;right:auto;left:50%;transform:translateX(-50%)}
 @keyframes vline{from{opacity:0;transform:translateY(1.6cqh);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
 .vnow{position:relative}
 body.vmode .vnow::after{content:"";position:absolute;left:-1.2cqw;top:8%;bottom:8%;width:.5cqw;border-radius:1cqw;background:var(--c);animation:vbar .9s ease both}
 @keyframes vbar{from{transform:scaleY(0)}to{transform:none}}
-body.vmode #slideHost.tin-fade .slide{animation:tfade .8s ease both}
-body.vmode #slideHost.tin-slide .slide{animation:tslide .8s cubic-bezier(.2,.7,.2,1) both}
-body.vmode #slideHost.tin-zoom .slide{animation:tzoom .9s ease both}
-body.vmode #slideHost.tout{transition:opacity .45s ease,transform .45s ease;opacity:0}
+body.vmode #slideHost.tin-fade .slide{animation:tfade calc(.8s / var(--vr,1)) ease both}
+body.vmode #slideHost.tin-slide .slide{animation:tslide calc(.8s / var(--vr,1)) cubic-bezier(.2,.7,.2,1) both}
+body.vmode #slideHost.tin-zoom .slide{animation:tzoom calc(.9s / var(--vr,1)) ease both}
+body.vmode #slideHost.tout{transition:opacity calc(.45s / var(--vr,1)) ease,transform calc(.45s / var(--vr,1)) ease;opacity:0}
 body.vmode #slideHost.tout.t-slide{transform:translateX(-4%)}
 body.vmode #slideHost.tout.t-zoom{transform:scale(1.04)}
 @keyframes tfade{from{opacity:0}to{opacity:1}}
@@ -609,7 +610,8 @@ body.zooming #ctl,body.zooming #pill,body.zooming #mini,body.zooming #webpop{vis
         </div>
         <div class="settings">
           <h3>Chiếu kiểu video / quay video</h3>
-          <label>Tốc độ hiện từng dòng<select id="vSpeed"><option value="1.45">Rất chậm</option><option value="1.2" selected>Chậm</option><option value="1">Vừa</option><option value="0.75">Nhanh</option></select></label>
+          <label>Tốc độ hiện từng dòng<select id="vSpeed"><option value="1.45">Rất chậm</option><option value="1.2" selected>Chậm</option><option value="1">Vừa</option><option value="0.75">Nhanh</option><option value="0.55">Rất nhanh</option><option value="0.4">Siêu nhanh</option></select></label>
+          <label>Tăng tốc cả video<select id="vRate"><option value="0.75">×0,75</option><option value="1" selected>×1 (bình thường)</option><option value="1.25">×1,25</option><option value="1.5">×1,5</option><option value="2">×2</option><option value="3">×3</option><option value="4">×4</option></select></label>
           <label>Dừng suy nghĩ trước đáp án<select id="vThink"><option value="0">Không</option><option value="3">3 giây</option><option value="5" selected>5 giây</option><option value="10">10 giây</option></select></label>
           <label>Hiệu ứng chuyển slide<select id="vTrans"><option value="fade" selected>Mờ dần</option><option value="slide">Trượt ngang</option><option value="zoom">Phóng nhẹ</option></select></label>
         </div>
@@ -1872,8 +1874,17 @@ setInterval(()=>{
 },200);
 
 /* ---------------- CHIẾU KIỂU VIDEO (mọi loại slide như nhau: từng dòng hiện chậm → giữ → chuyển tiếp) + quay video ---------------- */
-const V={on:false,paused:false,run:0,rec:null,stream:null,chunks:[],mime:""};
-const vsleep=async(ms,run)=>{ let left=ms; while(left>0){ if(!V.on||V.run!==run) throw "stop"; await new Promise(r=>setTimeout(r,100)); if(!V.paused) left-=100; } };
+const V={on:false,paused:false,run:0,rec:null,stream:null,chunks:[],mime:"",rate:1};
+const RATES=[0.5,0.75,1,1.25,1.5,2,2.5,3,4];
+// realtime=true: không bị tăng tốc (đếm ngược suy nghĩ vẫn đúng từng giây)
+const vsleep=async(ms,run,realtime)=>{ let left=ms; while(left>0){ if(!V.on||V.run!==run) throw "stop"; await new Promise(r=>setTimeout(r,50)); if(!V.paused) left-=50*(realtime?1:V.rate); } };
+function vSetRate(r,show){ V.rate=Math.max(0.5,Math.min(4,Math.round(r*100)/100)); document.body.style.setProperty("--vr",V.rate);
+  const sel=$("vRate"); if([...sel.options].some(o=>+o.value===V.rate)) sel.value=String(V.rate); store.set("vRate",V.rate);
+  if(V.on) document.title=`▶ ×${String(V.rate).replace(".",",")} — Dạy học Toán`;
+  if(show) vBadge(`Tốc độ ×${String(V.rate).replace(".",",")}`); }
+function vStep(dir){ const i=RATES.findIndex(x=>x>=V.rate-1e-9); const j=Math.max(0,Math.min(RATES.length-1,(i<0?RATES.length-1:i)+dir)); vSetRate(RATES[j],true); }
+// nhãn tốc độ: khi đang quay thì không hiện (để không lọt vào video) — xem tốc độ trên tên tab
+function vBadge(txt){ if(V.rec) return; let b=$("vRateTag"); if(!b){ b=document.createElement("div"); b.id="vRateTag"; b.className="vthink vrate"; $("stage").appendChild(b); } b.textContent=txt; clearTimeout(vBadge.t); vBadge.t=setTimeout(()=>b.remove(),1200); }
 // các “dòng” lần lượt xuất hiện của một slide, theo thứ tự đọc; ord = ảnh đi kèm sẽ hiện tới đâu
 function vUnits(host,sl){
   const U=[], add=(el,ord,st)=>{ if(el && !U.some(u=>u.el===el)) U.push({el,ord,st}); };
@@ -1899,7 +1910,7 @@ async function vSlide(run){
   let thinkDone=false;
   for(const u of U){
     if(u.st && sl.kind==="thuchanh" && !thinkDone){ thinkDone=true; const th=+$("vThink").value||0;
-      if(th){ const b=document.createElement("div"); b.className="vthink"; host.querySelector(".slide").appendChild(b); for(let s=th;s>0;s--){ b.textContent=`Suy nghĩ… ${s}`; await vsleep(1000,run); } b.remove(); } }
+      if(th){ const b=document.createElement("div"); b.className="vthink"; host.querySelector(".slide").appendChild(b); for(let s=th;s>0;s--){ b.textContent=`Suy nghĩ… ${s}`; await vsleep(1000,run,true); } b.remove(); } }
     if(u.st){ P.step=Math.max(P.step,u.st); applyStep(); }
     host.querySelectorAll(".vnow").forEach(x=>x.classList.remove("vnow"));
     u.el.classList.remove("vhide"); void u.el.offsetWidth; u.el.classList.add("vshow"); if(!["cover","intro"].includes(sl.kind)) u.el.classList.add("vnow");
@@ -1938,13 +1949,13 @@ async function startVideo({record=false,pre=null,from=0}={}){
   else if(pre){ P.slides=pre; P.playlist=true; }
   setAuto(false); setPen(false); closeLayer(); $("webpop").hidden=true;
   P.i=Math.min(from,P.slides.length-1);
-  V.on=true; V.paused=false; V.run++; document.body.classList.add("vmode");
+  V.on=true; V.paused=false; V.run++; document.body.classList.add("vmode"); V.title0=V.title0||document.title; vSetRate(+$("vRate").value||1,false); if(V.rate!==1) setTimeout(()=>vBadge(`Tốc độ ×${String(V.rate).replace(".",",")} · ↑ ↓ để đổi`),400);
   try{ if(!document.fullscreenElement) await document.documentElement.requestFullscreen(); }catch(e){}
   if(V.rec){ document.body.classList.add("vrec"); const d=document.createElement("div"); d.className="vrec-dot"; d.id="vrecDot"; document.body.appendChild(d); await new Promise(r=>setTimeout(r,700)); $("vrecDot").remove(); V.rec.start(1000); }
   vLoop(V.run);
 }
 function stopVideo(done){
-  if(!V.on) return; V.on=false; V.run++; V.paused=false; P.vlim=null;
+  if(!V.on) return; V.on=false; V.run++; V.paused=false; P.vlim=null; if(V.title0) document.title=V.title0;
   document.body.classList.remove("vmode","vrec"); const h=$("slideHost"); h.classList.remove("tout","t-slide","t-zoom","tin-fade","tin-slide","tin-zoom");
   document.querySelectorAll(".vthink").forEach(x=>x.remove());
   if(V.rec && V.rec.state==="paused"){ try{ V.rec.resume(); }catch(e){} }
@@ -1965,6 +1976,10 @@ async function saveVideo(){
 window.addEventListener("keydown",e=>{ if(!V.on) return; const k=e.key; e.stopImmediatePropagation();
   if(k==="Escape"||k==="m"||k==="M"){ e.preventDefault(); stopVideo(false); }
   else if(k===" "||k==="k"||k==="K"){ e.preventDefault(); vPause(); }
+  else if(k==="+"||k==="="||k==="ArrowUp"||k==="]"){ e.preventDefault(); vStep(1); }
+  else if(k==="-"||k==="_"||k==="ArrowDown"||k==="["){ e.preventDefault(); vStep(-1); }
+  else if(k==="0"){ e.preventDefault(); vSetRate(1,true); }
+  else if(/^[1-4]$/.test(k)){ e.preventDefault(); vSetRate(+k,true); }
   else if(k==="ArrowRight"||k==="PageDown"){ e.preventDefault(); const run=++V.run; let j=Math.min(P.slides.length-1,P.i+1); P.i=j; vLoop(run); }
   else if(k==="ArrowLeft"||k==="PageUp"){ e.preventDefault(); const run=++V.run; P.i=Math.max(0,P.i-1); vLoop(run); }
 },true);
@@ -1977,7 +1992,7 @@ function vPause(){ V.paused=!V.paused;
 $("btnVideo").onclick=()=>startVideo({});
 $("btnRec").onclick=()=>startVideo({record:true});
 $("cVideo").onclick=()=>startVideo({from:P.i});
-[["vSpeed","value"],["vThink","value"],["vTrans","value"]].forEach(([id,pr])=>{ const v=store.get(id,null); if(v!=null) $(id)[pr]=v; $(id).addEventListener("change",()=>store.set(id,$(id)[pr])); });
+[["vSpeed","value"],["vThink","value"],["vTrans","value"],["vRate","value"]].forEach(([id,pr])=>{ const v=store.get(id,null); if(v!=null) $(id)[pr]=v; $(id).addEventListener("change",()=>store.set(id,$(id)[pr])); });
 const _closeShow=closeShow; closeShow=function(){ if(V.on) stopVideo(false); return _closeShow.apply(this,arguments); };
 
 /* ---------------- bút vẽ ---------------- */
@@ -2018,7 +2033,7 @@ function pick(){
   let k=0; const roll=setInterval(()=>{ $("pnum") && ($("pnum").textContent=1+Math.floor(Math.random()*N)); if(++k>14){ clearInterval(roll); $("pnum") && ($("pnum").textContent=num); } },55);
 }
 const KEYS=[["→ Space Enter","Tiếp / hiện bước tiếp theo"],["← Backspace","Lùi"],["Home / End","Slide đầu / cuối"],["O","Tổng quan, chọn slide"],["H","Thu gọn / hiện menu"],["F","Toàn màn hình"],["L","Lấp đầy màn hình / giữ khung 16:9"],
-  ["T","Đổi kiểu màu"],["B","Đổi độ đậm"],["+ / −","Chữ to / nhỏ"],["D","Hiện đáp án câu thực hành"],["G","Bật / dừng đồng hồ"],["I","Hiện / ẩn khung hình minh hoạ"],["[  /  ]","Chiếu nhiều bài: về bài trước / sang bài sau"],["M","Chiếu kiểu video từ slide này (Esc dừng, Space tạm dừng)"],["V","Phóng to ảnh toàn màn hình (cuộn chuột / kéo để xem chi tiết)"],["N","Mở trang web dạy học (cửa sổ ¼, ½, toàn màn hình)"],["A","Bật / tắt tự động chạy"],["R","Bốc thăm học sinh"],
+  ["T","Đổi kiểu màu"],["B","Đổi độ đậm"],["+ / −","Chữ to / nhỏ"],["D","Hiện đáp án câu thực hành"],["G","Bật / dừng đồng hồ"],["I","Hiện / ẩn khung hình minh hoạ"],["[  /  ]","Chiếu nhiều bài: về bài trước / sang bài sau"],["M","Chiếu kiểu video từ slide này (Esc dừng, Space tạm dừng)"],["↑ ↓  hoặc  + −","Khi chiếu kiểu video: tăng / giảm tốc độ (×0,5 → ×4); phím 1–4 chọn nhanh ×1…×4, 0 về ×1"],["V","Phóng to ảnh toàn màn hình (cuộn chuột / kéo để xem chi tiết)"],["N","Mở trang web dạy học (cửa sổ ¼, ½, toàn màn hình)"],["A","Bật / tắt tự động chạy"],["R","Bốc thăm học sinh"],
   ["P","Bật / tắt bút vẽ"],["Z / X","Xoá nét cuối / xoá hết nét"],[".  /  W","Màn đen / màn trắng"],["?","Bảng phím tắt"],["Esc","Đóng lớp phủ / thoát"]];
 function help(){ layer("help",`<div class="help"><h3>Phím tắt</h3><div class="g">${KEYS.map(k=>`<div><kbd>${esc(k[0])}</kbd> ${esc(k[1])}</div>`).join("")}</div></div>`); }
 $("keysList").innerHTML=KEYS.map(k=>`<div><kbd>${esc(k[0])}</kbd> ${esc(k[1])}</div>`).join("");
