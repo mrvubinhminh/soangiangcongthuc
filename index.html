@@ -288,6 +288,7 @@ pre.gas{margin:0;max-height:220px;overflow:auto;font:.74rem/1.5 var(--f-code);ba
 .ai-body{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px}
 .ai-body .form{margin:0}
 .ai-body .form label.wide2{grid-column:span 2}
+.srcnote{border-left:3px solid var(--k-bia);padding:6px 10px;background:color-mix(in srgb,var(--k-bia) 8%,var(--panel));border-radius:4px}
 @media (max-width:520px){.ai-body .form label.wide2{grid-column:auto}}
 .presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.82rem;color:var(--muted)}
 .presets button{font-size:.8rem;padding:5px 10px;border-radius:999px}
@@ -686,6 +687,8 @@ body.zooming #ctl,body.zooming #pill,body.zooming #mini,body.zooming #webpop{vis
       <div class="ai-body">
         <div class="form">
           <label class="wide2">Loại bài<select id="pKind"></select></label>
+          <label class="wide2">Nguồn kiến thức<select id="pSrc"><option value="sgk">Theo SGK – AI tự soạn nội dung</option><option value="file">Từ PDF / ảnh thầy đính kèm – chỉ dùng kiến thức trong tài liệu</option></select></label>
+          <label class="wide2" id="pPagesL" hidden>Phạm vi trong tài liệu (tuỳ chọn)<input id="pPages" placeholder="vd: trang 20–24, mục 2 và bài tập 1.5–1.9; để trống = dùng cả tài liệu"></label>
           <label class="wide2">Bài học / chủ đề<input id="pLesson" value="Phương trình lượng giác cơ bản"></label>
           <label>Lớp<select id="pGrade"><option>Lớp 10</option><option selected>Lớp 11</option><option>Lớp 12</option><option>Lớp 9</option></select></label>
           <label>Bộ sách<input id="pBook" value="Kết nối tri thức với cuộc sống"></label>
@@ -698,6 +701,7 @@ body.zooming #ctl,body.zooming #pill,body.zooming #mini,body.zooming #webpop{vis
         </div>
         <div class="presets" id="kindChips" aria-label="Chọn nhanh loại bài"></div>
         <p class="hint" id="kindNote"></p>
+        <p class="hint srcnote" id="srcNote" hidden>📎 Cách dùng: mở Claude / ChatGPT / Gemini → <b>đính kèm file PDF hoặc ảnh</b> (chụp rõ, đủ trang) → dán prompt vào cùng tin nhắn → gửi. Có thể để trống ô “Bài học” — AI lấy tên bài theo tài liệu.</p>
         <div class="row ai-acts">
           <button class="primary" id="cpPrompt">① Sao chép prompt</button>
           <a class="lnk" href="https://claude.ai/new" target="_blank" rel="noopener">Mở Claude ↗</a>
@@ -2315,9 +2319,10 @@ function phieuHTML(doc){
           body+=`<div class="pa c${c}">${s.options.map(o=>`<div><b>${o.L}.</b> ${rich(o.text,true)}</div>`).join("")}</div>`; }
         if(s.tf.length) body+=`<table class="ds"><thead><tr><th></th><th>Mệnh đề</th><th>Đúng</th><th>Sai</th></tr></thead><tbody>${s.tf.map(r=>`<tr><td>${r.L})</td><td>${rich(r.text)}</td><td></td><td></td></tr>`).join("")}</tbody></table>`;
         if(name==="Trả lời ngắn") body+=`<div class="ds-ans"><b>Đáp số:</b> <span></span></div>`;
-        html+=`<div class="q"><div class="qh"><b>Câu ${q+1}.</b><div>${body}</div></div>${lines(name==="Tự luận"?ntl:n)}</div>`;
+        const code=(/^\s*(D\d+\.[MT]|[ABC]\d+)\b/.exec(plainT(s.title||""))||[])[1];
+        html+=`<div class="q"><div class="qh"><b>Câu ${code||q+1}.</b><div>${body}</div></div>${lines(name==="Tự luận"?ntl:n)}</div>`;
         const ans = s.options.length ? s.options.filter(o=>o.ok).map(o=>o.L).join(", ")||"?" : s.tf.length ? s.tf.map(r=>`${r.L}) ${r.val?"Đ":"S"}`).join("  ") : (s.answer||"—");
-        k.rows.push([`${ROMAN[part-1]}.${q+1}`,ans,s.steps.join(" ")]);
+        k.rows.push([code||`${ROMAN[part-1]}.${q+1}`,ans,s.steps.join(" ")]);
       });
     });
     keys.push(k);
@@ -2568,6 +2573,27 @@ const KINDS={
     rules:["Câu hỏi ngắn, độ khó tăng dần, mỗi câu 20–45 giây (ghi {thuchanh, 30 giây}).",
       "Câu cuối là câu “Ngôi sao hy vọng” khó hơn hẳn.",
       "Không cần khối công thức; thêm 1 khối `## Luật chơi {note}` gồm 3 gạch đầu dòng."]},
+  phieu45:{name:"Phiếu học tập phân hoá – 45 phút",chip:"Phiếu phân hoá 45'",mode:"full",def:[2,0,0,6],
+    fixed:"đúng cấu trúc phiếu học tập phân hoá 45 phút gồm 5 phần dưới đây (2 dạng toán, 6 câu luyện tập tầng A–B–C)",
+    goal:"PHIẾU HỌC TẬP THỰC HÀNH PHÂN HOÁ 45 PHÚT (sau khi đã học lý thuyết), quy trình KIẾN THỨC → VÍ DỤ MẪU → BÀI TƯƠNG TỰ → LUYỆN TẬP PHÂN HOÁ → TỰ ĐÁNH GIÁ",
+    rules:["PHẦN 1 – Kiến thức cần nhớ (5 phút): khối `## Kiến thức cần nhớ {do}` gồm 2–4 công thức/kiến thức trọng tâm (dòng `1.`), điều kiện áp dụng ở dòng `!`, mẹo nhớ ở dòng `>`; khối `## Nhận diện dạng toán {xanhduong}` gồm các dòng `- D1: dấu hiệu …`; rồi 1 câu `## Câu hỏi kích hoạt {thuchanh, 1 phút}`.",
+      "PHẦN 2 – Ví dụ mẫu và bài tương tự (10 phút): chọn 2 dạng toán trọng tâm nhất. Mỗi dạng k gồm 3 khối liền nhau: `## Dk. Tên dạng toán {cam}` (dòng `1. Dấu hiệu nhận biết: …`, `2. Phương pháp: …`) → `## Dk.M – Ví dụ mẫu {vidu}` (lời giải 3–5 dòng >>, mỗi bước kèm giải thích ngắn sau dấu “—”; dòng >> cuối có thể là “Lỗi thường gặp: …”; => đáp số) → `## Dk.T – Bài tương tự {thuchanh, 3 phút}` (chỉ đổi dữ kiện so với ví dụ mẫu; 3 dòng >> là Gợi ý 1 / Gợi ý 2 / Gợi ý 3 tăng dần, KHÔNG lộ đáp số; => đáp số).",
+      "PHẦN 3 – Luyện tập phân hoá (20 phút): ngân hàng 6 câu, mỗi câu một khối `{thuchanh, k phút}` với mã ở đầu tên: `## A1 – Nền tảng`, `## A2 – Nền tảng`, `## A3 – Nền tảng` (nhận biết – thông hiểu, áp dụng trực tiếp, có >> gợi ý), `## B1 – Thành thạo`, `## B2 – Thành thạo` (biến đổi, kết hợp kiến thức), `## C1 – Thử thách` (vận dụng nâng cao: thực tế, chứng minh, phản biện hoặc nhiều cách giải). Thêm khối `## Lộ trình gợi ý {note}`: “Bắt đầu từ A; làm đúng A thì chuyển B; vững B thì thử C” — KHÔNG gắn nhãn yếu/giỏi.",
+      "PHẦN 4 – Phát hiện sai lầm (7 phút): khối `## Phát hiện sai lầm {thuchanh, 7 phút}`: đề bài + LỜI GIẢI SAI ĐIỂN HÌNH của một bạn, mỗi bước một dòng `- Bước k: …` (giữ nguyên bước sai, lỗi thật học sinh hay mắc); yêu cầu chỉ ra bước sai, giải thích, sửa lại; các dòng >> là: bước sai và nguyên nhân → lời giải đúng → 1–2 lưu ý rút ra; => kết quả đúng.",
+      "PHẦN 5 – Phiếu thoát (3 phút): `## Phiếu thoát 1 {thuchanh, 1 phút}` (kiểm tra nhanh), `## Phiếu thoát 2 {thuchanh, 1 phút}` (hỏi về lỗi sai cần tránh), rồi `## Tự đánh giá {note}` gồm 3 dòng: `- ☐ Em tự làm được.` `- ☐ Em cần xem lại ví dụ mẫu.` `- ☐ Em cần được hướng dẫn thêm.`",
+      "Câu tự luận/trả lời ngắn: dòng => ghi đáp số tối giản (có đơn vị nếu cần; bài chứng minh ghi kết luận cốt lõi); các dòng >> là lời giải hoặc gợi ý từng nấc. KHÔNG viết bảng đáp số hay hướng dẫn giải riêng — ứng dụng tự tách đáp số (=>) và lời giải (>>) khỏi phiếu học sinh khi in, và chỉ hiện khi giáo viên bấm khi chiếu.",
+      "Tổng thời gian ghi trong các khối {thuchanh, …} cộng với phần kiến thức – ví dụ phải vừa 45 phút; độ khó tăng dần A → B → C."]},
+  phieu90:{name:"Phiếu học tập phân hoá – 90 phút (2 tiết)",chip:"Phiếu phân hoá 90'",mode:"full",def:[3,0,0,12],
+    fixed:"đúng cấu trúc phiếu học tập phân hoá 90 phút gồm 6 phần dưới đây (3 dạng toán, 12 câu luyện tập tầng A–B–C)",
+    goal:"PHIẾU HỌC TẬP LUYỆN TẬP CHUYÊN SÂU PHÂN HOÁ 90 PHÚT (2 tiết, lớp nhiều trình độ, sau khi đã học lý thuyết)",
+    rules:["PHẦN 1 – Khởi động và kiến thức cần nhớ (10 phút): 3 câu `## Khởi động 1/2/3 {thuchanh, 1 phút}` kiểm tra kiến thức nền; khối `## Kiến thức cần nhớ {do}` gồm 3–5 công thức/tính chất (dòng `1.`), điều kiện ở dòng `!`, mẹo nhớ và lưu ý tránh nhầm ở dòng `>`; khối `## Nhận diện dạng toán {xanhduong}` gồm các dòng `- Dk – tên dạng: dấu hiệu nhận biết`.",
+      "PHẦN 2 – Ví dụ mẫu và thực hành theo dạng (20 phút): chọn 3 dạng toán tiêu biểu (4 dạng nếu mỗi dạng ngắn). Mỗi dạng k gồm 3 khối liền nhau: `## Dk. Tên dạng toán {cam}` (dòng `1. Dấu hiệu: …`, `2. Kiến thức – phương pháp: …`) → `## Dk.M – Ví dụ mẫu {vidu}` (3–5 dòng >>, mỗi bước kèm giải thích ngắn sau dấu “—”; dòng >> cuối là “Lỗi thường gặp: …”; => đáp số) → `## Dk.T – Bài tương tự {thuchanh, 4 phút}` (đổi dữ kiện hợp lý; 3 dòng >> là Gợi ý 1/2/3, không lộ đáp số; => đáp số).",
+      "PHẦN 3 – Luyện tập phân hoá (30 phút): ngân hàng 12 câu, mỗi câu một khối `{thuchanh, k phút}`, mã ở đầu tên: `## A1 – Nền tảng` … `## A5 – Nền tảng` (bao phủ các dạng cơ bản, có >> gợi ý từng bước), `## B1 – Thành thạo` … `## B4 – Thành thạo` (tự chọn phương pháp, trình bày lập luận), `## C1 – Thử thách` (bài toán thực tế), `## C2 – Thử thách` (phát hiện sai lầm hoặc phản biện), `## C3 – Thử thách` (nhiều cách giải, chứng minh hoặc khái quát). Thêm khối `## Lộ trình gợi ý {note}`: “Cần củng cố: A1–A5 rồi 1–2 câu B · Đạt chuẩn: 2 câu A kiểm tra nhanh rồi B1–B4 · Thành thạo: 1–2 câu B rồi C1–C3” — không gắn nhãn cố định lên học sinh.",
+      "PHẦN 4 – Phân tích sai lầm (10 phút): 2 khối `## Sai lầm 1 {thuchanh, 5 phút}`, `## Sai lầm 2 {thuchanh, 5 phút}`: đề + lời giải sai tiêu biểu, mỗi bước một dòng `- Bước k: …` (lỗi thật, gắn kiến thức chủ đề); các dòng >> là: tìm bước sai → nguyên nhân → lời giải đúng → kinh nghiệm rút ra; => kết quả đúng.",
+      "PHẦN 5 – Vận dụng và hợp tác (10 phút): `## Vận dụng thực tế {thuchanh, 10 phút}`: bối cảnh thực tế hợp lý, làm cá nhân hoặc theo cặp, yêu cầu trình bày mô hình/lập luận và giải thích vì sao chọn phương pháp; dòng `> Mở rộng: …` là câu hỏi cho nhóm xong sớm; >> lời giải theo 4 bước mô hình hoá; => đáp số.",
+      "PHẦN 6 – Kiểm tra cuối buổi (10 phút): `## Kiểm tra 1 – Cơ bản {thuchanh, 3 phút}`, `## Kiểm tra 2 – Thông hiểu {thuchanh, 3 phút}`, `## Kiểm tra 3 – Vận dụng {thuchanh, 4 phút}`; rồi `## Tự đánh giá {note}` gồm các dòng `- ☐ Em nhận diện được dạng toán.` `- ☐ Em chọn được phương pháp phù hợp.` `- ☐ Em trình bày lời giải đầy đủ.` `- ☐ Em tự kiểm tra được kết quả.` `- ☐ Em biết sửa lỗi khi làm sai.` `- Dạng em đã thành thạo: …` `- Dạng em cần luyện thêm: …` `- Mục tiêu tự học tiếp theo: …`.",
+      "Cuối cùng thêm khối `## Ghi chú cho giáo viên {note}`: bảng phân bổ thời gian 90 phút (mỗi phần một dòng `-`), cách tổ chức nhóm, tiêu chí đánh giá bài làm, cách hỗ trợ học sinh cần củng cố và mở rộng cho học sinh khá giỏi.",
+      "Câu tự luận/trả lời ngắn: dòng => là đáp số tối giản (có đơn vị; bài chứng minh ghi kết luận cốt lõi); dòng >> là lời giải từng bước hoặc gợi ý từng nấc. KHÔNG viết bảng đáp số hay hướng dẫn giải riêng — ứng dụng tự tách đáp số (=>) và lời giải (>>) ra phần đáp án khi in phiếu."]},
   ontap:{name:"Ôn tập chương / ôn kiểm tra",chip:"Ôn kiểm tra",mode:"luyentap",def:[2,8,3,4],
     goal:"tiết ÔN TẬP CHƯƠNG – ÔN KIỂM TRA theo cấu trúc đề mới",
     rules:["Mỗi dạng bài có một khối công thức `## Dạng k: tên dạng {màu}` tóm tắt phương pháp giải trong 3–5 dòng.",
@@ -2584,16 +2610,28 @@ $("kindChips").innerHTML="<span>Chọn nhanh:</span>"+Object.entries(KINDS).map(
 fillSel("pVD",0,6,3); fillSel("pTN",0,12,3); fillSel("pDS",0,4,1); fillSel("pTL",0,6,1);
 function applyKind(k,setCounts){ const K=KINDS[k]||KINDS.giang; $("pKind").value=k;
   if(setCounts){ ["pVD","pTN","pDS","pTL"].forEach((id,i)=>$(id).value=String(K.def[i])); }
-  $("kindNote").textContent=`Gợi ý khi chiếu: kiểu "${{full:"Bài giảng đầy đủ",luyentap:"Luyện tập củng cố",thuchanh:"Chỉ câu luyện tập"}[K.mode]}" — ứng dụng tự chọn sẵn khi thầy dán kết quả.`;
+  if(setCounts && K.fixed) $("pLevel").value="Lớp có nhiều trình độ (phân hoá)";
+  ["pVD","pTN","pDS","pTL"].forEach(id=>{ $(id).disabled=!!K.fixed; $(id).title=K.fixed?"Loại bài này có cấu trúc cố định":""; });
+  $("kindNote").textContent=(K.fixed?"Cấu trúc cố định theo phiếu mẫu (số câu không cần chọn). In: mục In phiếu tự tách đáp số và lời giải ra trang riêng. ":"")+`Gợi ý khi chiếu: kiểu "${{full:"Bài giảng đầy đủ",luyentap:"Luyện tập củng cố",thuchanh:"Chỉ câu luyện tập"}[K.mode]}" — ứng dụng tự chọn sẵn khi thầy dán kết quả.`;
   document.querySelectorAll("#kindChips [data-k]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===k)); }
 function prompt(){
-  const L=$("pLesson").value.trim()||"(tên bài)", G=$("pGrade").value, B=$("pBook").value.trim()||"Kết nối tri thức",
+  const fromFile=$("pSrc").value==="file", pages=$("pPages").value.trim();
+  const L=$("pLesson").value.trim()||(fromFile?"(tên bài theo tài liệu đính kèm)":"(tên bài)"), G=$("pGrade").value, B=$("pBook").value.trim()||"Kết nối tri thức",
     vd=+$("pVD").value, tn=+$("pTN").value, ds=+$("pDS").value, tl=+$("pTL").value, K=KINDS[$("pKind").value]||KINDS.giang,
     lv=$("pLevel").value, fc=$("pFocus").value;
   const parts=[vd&&`${vd} ví dụ có lời giải từng bước`,(tn+ds+tl)&&`${tn+ds+tl} câu hỏi theo định dạng đề THPT 2025 (${[tn&&`${tn} trắc nghiệm 4 phương án`,ds&&`${ds} câu đúng/sai 4 mệnh đề`,tl&&`${tl} câu trả lời ngắn`].filter(Boolean).join(", ")})`].filter(Boolean).join(" và ");
-  return `Bạn là giáo viên Toán THPT xuất sắc với 20 năm kinh nghiệm dạy học tích cực, dạy học phát triển năng lực, luôn giúp học sinh hiểu bản chất và tiến bộ rõ rệt.
-Hãy soạn nội dung TRÌNH CHIẾU cho ${K.goal}: "${L}" — ${G}, bộ sách ${B} (chương trình GDPT 2018). Nội dung gồm ${parts||"các khối kiến thức trọng tâm"}.
-
+  const SRC = fromFile ? `
+NGUỒN KIẾN THỨC – TÀI LIỆU ĐÍNH KÈM (PDF hoặc ảnh)${pages?` — chỉ dùng phần: ${pages}`:""}:
+- Bước 1: đọc KỸ TOÀN BỘ tài liệu đính kèm (mọi trang, mọi ảnh) trước khi soạn. Nếu là ảnh chụp/scan, chép lại công thức thật cẩn thận, đối chiếu ký hiệu.
+- Mọi kiến thức, định nghĩa, công thức, ký hiệu, cách gọi tên dạng toán và thứ tự trình bày LẤY TỪ TÀI LIỆU. Không đưa kiến thức ngoài tài liệu hoặc vượt chương trình; chỉ bổ sung lời giải, gợi ý, câu hỏi luyện tập cùng mức độ.
+- Ví dụ và bài tập trong tài liệu: ưu tiên dùng lại hoặc đổi số liệu từ chính các bài đó; giữ nguyên dạng và mức độ.
+- Tên bài lấy theo tiêu đề trong tài liệu${$("pLesson").value.trim()?` (đối chiếu với “${$("pLesson").value.trim()}”)`:""}. Đặt dòng chú thích nguồn ngay dưới mỗi khối lấy từ tài liệu: <!-- nguồn: trang …, mục … -->.
+- Hình vẽ, đồ thị, bảng trong tài liệu cần cho bài: ghi ở cuối dòng [ảnh: mô tả hình – trang …] để giáo viên chèn ảnh cắt từ tài liệu.
+- Chỗ nào tài liệu mờ, thiếu hoặc không đọc được: KHÔNG tự bịa — ghi một dòng <!-- cần kiểm tra: … --> rồi soạn phần còn lại.
+` : "";
+  return `Bạn là giáo viên Toán THPT xuất sắc với 20 năm kinh nghiệm dạy học tích cực, dạy học phát triển năng lực, chuyên gia giáo dục phân hoá và thiết kế học liệu, luôn giúp học sinh hiểu bản chất và tiến bộ rõ rệt.
+Hãy soạn nội dung để TRÌNH CHIẾU và IN PHIẾU cho ${K.goal}: "${L}" — ${G}, bộ sách ${B} (chương trình GDPT 2018). Nội dung gồm ${K.fixed||parts||"các khối kiến thức trọng tâm"}.
+${SRC}
 Đối tượng: ${lv}. ${LEVEL_NOTE[lv]||""}
 Năng lực trọng tâm: ${fc}${fc.startsWith("Cân bằng")?" (tư duy – lập luận, mô hình hoá, giải quyết vấn đề, giao tiếp toán học, sử dụng công cụ)":""}.
 
@@ -2601,10 +2639,10 @@ Yêu cầu riêng cho loại bài này:
 ${K.rules.map(r=>"- "+r).join("\n")}
 
 Yêu cầu chung:
-- Công thức, ký hiệu đúng SGK, ghi kèm điều kiện. Mỗi khối công thức 3–7 dòng.
+- Công thức, ký hiệu đúng ${fromFile?"tài liệu đính kèm":"SGK"}, ghi kèm điều kiện. Mỗi khối công thức 3–7 dòng.
 - Mỗi bước giải (dòng >>) là MỘT ý ngắn vì sẽ hiện lần lượt khi giảng; tối đa 5 bước; kết luận (dòng =>) ghi rõ đáp số.
 - Đáp án chính xác tuyệt đối; phương án nhiễu là sai lầm học sinh hay mắc; mỗi câu có lời giải ngắn 1–2 dòng.
-- Câu trả lời ngắn có đáp số là một số (dấu phẩy thập phân).
+${K.fixed?"- Câu tự luận: dòng => là đáp số tối giản hoặc kết luận cốt lõi; số thập phân dùng dấu phẩy.":"- Câu trả lời ngắn có đáp số là một số (dấu phẩy thập phân)."}
 - Chỗ nào cần hình (đồ thị, hình vẽ hình học, bảng số liệu dạng hình, ảnh thực tế) thì thêm vào CUỐI đúng dòng đó: [ảnh: mô tả ngắn hình cần có]. Hình cho cả câu thì đặt riêng một dòng ngay dưới đề. Giáo viên sẽ thay bằng link ảnh.
 
 Chỉ trả về MỘT khối mã \`\`\`markdown, không giải thích thêm, đúng cú pháp sau:
@@ -2650,15 +2688,19 @@ Quy tắc bắt buộc:
 - Công thức LaTeX trong $...$; công thức giữa dòng $$...$$ trên MỘT dòng. Không dùng \\[ \\], \\( \\), align, bảng, hình vẽ.
 - Mỗi dòng bắt đầu đúng ký hiệu: ">>" bước giải, "=>" đáp số, "A." đến "D." phương án, "a)" đến "d)" mệnh đề kèm {Đ} hoặc {S} ở cuối dòng.
 - Màu khối công thức chọn trong: do, cam, xanhla, xanhduong, xanhreu, vangreu, dohong, hong, tim, nau.
-- Không thêm dòng phụ đề hay dòng bắt đầu bằng @.`;
+- Không thêm dòng phụ đề hay dòng bắt đầu bằng @.${fromFile?"\n- Dòng chú thích nguồn chỉ dùng dạng <!-- … --> đứng riêng một dòng.":""}
+
+Trước khi trả lời, tự kiểm tra: (1) công thức và điều kiện áp dụng đúng${fromFile?" và khớp tài liệu":""}; (2) tự giải lại độc lập từng câu để chắc chắn đáp số ở dòng =>; (3) độ khó tăng dần; (4) tổng thời gian hợp lý; (5) mã câu/tên khối thống nhất, không trùng; (6) đề bài không lộ đáp số.`;
 }
 function refreshPrompt(){ $("prompt").textContent=prompt(); }
-["pLesson","pGrade","pBook","pLevel","pFocus","pVD","pTN","pDS","pTL"].forEach(id=>$(id).addEventListener("input",refreshPrompt));
+["pLesson","pGrade","pBook","pLevel","pFocus","pVD","pTN","pDS","pTL","pSrc","pPages"].forEach(id=>$(id).addEventListener("input",refreshPrompt));
+function syncSrc(){ const f=$("pSrc").value==="file"; $("pPagesL").hidden=!f; $("srcNote").hidden=!f; $("pLesson").placeholder=f?"Để trống: lấy tên bài theo tài liệu":""; }
+$("pSrc").addEventListener("change",()=>{ syncSrc(); savePrompt(); refreshPrompt(); });
 $("kindChips").addEventListener("click",e=>{ const b=e.target.closest("[data-k]"); if(!b) return; applyKind(b.dataset.k,true); savePrompt(); refreshPrompt(); toast("Loại bài: "+KINDS[b.dataset.k].name); });
 $("pKind").addEventListener("change",()=>{ applyKind($("pKind").value,true); savePrompt(); refreshPrompt(); });
-function savePrompt(){ store.set("prompt",Object.fromEntries(["pKind","pLesson","pGrade","pBook","pLevel","pFocus","pVD","pTN","pDS","pTL"].map(id=>[id,$(id).value]))); }
-(()=>{ const v=store.get("prompt",null); if(v) Object.entries(v).forEach(([id,x])=>{ if($(id)&&x!=null) $(id).value=x; }); if(!KINDS[$("pKind").value]) $("pKind").value="giang"; applyKind($("pKind").value,false); })();
-["pLesson","pGrade","pBook","pLevel","pFocus","pVD","pTN","pDS","pTL"].forEach(id=>$(id).addEventListener("change",savePrompt));
+function savePrompt(){ store.set("prompt",Object.fromEntries(["pKind","pLesson","pGrade","pBook","pLevel","pFocus","pVD","pTN","pDS","pTL","pSrc","pPages"].map(id=>[id,$(id).value]))); }
+(()=>{ const v=store.get("prompt",null); if(v) Object.entries(v).forEach(([id,x])=>{ if($(id)&&x!=null) $(id).value=x; }); if(!KINDS[$("pKind").value]) $("pKind").value="giang"; applyKind($("pKind").value,false); syncSrc(); })();
+["pLesson","pGrade","pBook","pLevel","pFocus","pVD","pTN","pDS","pTL","pPages"].forEach(id=>$(id).addEventListener("change",savePrompt));
 $("btnShowPrompt").onclick=()=>{ const h=!$("prompt").hidden; $("prompt").hidden=h; $("btnShowPrompt").setAttribute("aria-expanded",!h); $("btnShowPrompt").textContent=h?"Xem prompt":"Ẩn prompt"; };
 $("btnPasteAI").onclick=async()=>{
   try{ const txt=await navigator.clipboard.readText(); if(!txt.trim()) throw 0; $("src").value=cleanAI(txt); save(); modeFromKind(); build(); showView("soan"); toast("Đã dán kết quả AI."); $("src").scrollIntoView({block:"nearest"}); }
@@ -2814,7 +2856,7 @@ edPos();
    Sửa các lỗi của bản gốc: (1) bài vừa tải lên không bị lần đồng bộ ngầm ghi đè mất – dữ liệu Sheet được GỘP theo id, bản mới hơn thắng;
    (2) lưu trên máy (localStorage) nên tải lại trang không mất; (3) đọc file có BOM / xuống dòng Windows; (4) tải nhiều file, cả thư mục, kéo thả. */
 const QTYPES=Object.values(KINDS).map(k=>k.chip);
-const QCOLOR={"Bài giảng mới":"#1414C4","Khởi động 5 phút":"#D46A1C","Khám phá kiến thức":"#5B2C83","Tiết luyện tập":"#2E7D4F","Phân hoá 3 mức":"#00897B","Sửa sai lầm":"#B3261E","Toán thực tế":"#8D6E00","Trò chơi thi đua":"#C2185B","Ôn kiểm tra":"#37474F"};
+const QCOLOR={"Phiếu phân hoá 45'":"#00695C","Phiếu phân hoá 90'":"#004D40","Bài giảng mới":"#1414C4","Khởi động 5 phút":"#D46A1C","Khám phá kiến thức":"#5B2C83","Tiết luyện tập":"#2E7D4F","Phân hoá 3 mức":"#00897B","Sửa sai lầm":"#B3261E","Toán thực tế":"#8D6E00","Trò chơi thi đua":"#C2185B","Ôn kiểm tra":"#37474F"};
 const LIB={pick:[],items:store.get("lib",null), tomb:store.get("libTomb",[]), sel:store.get("libSel",null), cur:store.get("libCur",null), q:"", qt:"", edit:false, delAsk:false,
   url:store.get("libUrl",""), auto:store.get("libAuto",false), busy:false, lastWrite:0, timer:null};
 const nowStamp=()=>{ const d=new Date(),z=n=>String(n).padStart(2,"0"); return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}`; };
