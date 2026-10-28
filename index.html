@@ -157,6 +157,11 @@ body.vmode #slideHost.tout.t-zoom{transform:scale(1.04)}
 body.vmode .sl-intro img{animation:kburns 9s ease-out both}
 @keyframes kburns{from{transform:scale(1)}to{transform:scale(1.06)}}
 .vthink{position:absolute;right:3cqw;top:12cqh;z-index:4;font:800 .7em var(--f-ui);padding:.35em .9em;border-radius:999px;background:var(--c);color:var(--band-fg);box-shadow:0 .4cqh 1.4cqh rgba(0,0,0,.2);animation:tfade .4s both}
+.vcam{position:fixed;z-index:2147483002;border-radius:50%;overflow:hidden;background:#000;box-shadow:0 0 0 4px rgba(255,255,255,.9),0 8px 26px rgba(0,0,0,.35);pointer-events:none}
+.vcam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.vcam.s{width:13vmin;height:13vmin}.vcam.m{width:19vmin;height:19vmin}.vcam.l{width:27vmin;height:27vmin}
+.vcam.br{right:2.4vmin;bottom:5vmin}.vcam.bl{left:2.4vmin;bottom:5vmin}.vcam.tr{right:2.4vmin;top:11vmin}.vcam.tl{left:2.4vmin;top:11vmin}
+.vmic{position:fixed;z-index:2147483002;left:50%;top:10px;transform:translateX(-50%);display:none}
 .vrec-dot{position:fixed;top:10px;left:10px;z-index:2147483001;width:12px;height:12px;border-radius:50%;background:#e53935;box-shadow:0 0 0 3px rgba(229,57,53,.3);animation:pulse 1.2s infinite;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.vshow,body.vmode #slideHost .slide{animation-duration:.01s!important}}
 /* ===== ảnh mở đầu ===== */
@@ -614,6 +619,11 @@ body.zooming #ctl,body.zooming #pill,body.zooming #mini,body.zooming #webpop{vis
           <label>Tăng tốc cả video<select id="vRate"><option value="0.75">×0,75</option><option value="1" selected>×1 (bình thường)</option><option value="1.25">×1,25</option><option value="1.5">×1,5</option><option value="2">×2</option><option value="3">×3</option><option value="4">×4</option></select></label>
           <label>Dừng suy nghĩ trước đáp án<select id="vThink"><option value="0">Không</option><option value="3">3 giây</option><option value="5" selected>5 giây</option><option value="10">10 giây</option></select></label>
           <label>Hiệu ứng chuyển slide<select id="vTrans"><option value="fade" selected>Mờ dần</option><option value="slide">Trượt ngang</option><option value="zoom">Phóng nhẹ</option></select></label>
+          <label class="chk"><input type="checkbox" id="vSys" checked> Kèm âm thanh hệ thống (tiếng của tab / máy)</label>
+          <label class="chk"><input type="checkbox" id="vMic"> Kèm micro (giọng thầy giảng)</label>
+          <label class="chk"><input type="checkbox" id="vCam"> Kèm camera (khung hình thầy ở góc)</label>
+          <label>Vị trí camera<select id="vCamPos"><option value="br" selected>Góc phải dưới</option><option value="bl">Góc trái dưới</option><option value="tr">Góc phải trên</option><option value="tl">Góc trái trên</option></select></label>
+          <label>Cỡ camera<select id="vCamSize"><option value="s">Nhỏ</option><option value="m" selected>Vừa</option><option value="l">Lớn</option></select></label>
         </div>
       </div>
     </div>
@@ -1936,41 +1946,67 @@ async function startVideo({record=false,pre=null,from=0}={}){
   if(V.on){ stopVideo(false); return; }
   if(record){
     if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia||!window.MediaRecorder){ toast("Trình duyệt này không hỗ trợ quay — dùng Chrome hoặc Edge trên máy tính."); return; }
+    const wantSys=$("vSys").checked, wantMic=$("vMic").checked;
     try{
-      V.stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30,displaySurface:"browser"},audio:false,preferCurrentTab:true,selfBrowserSurface:"include",surfaceSwitching:"exclude"});
+      V.stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30,displaySurface:"browser"},
+        audio: wantSys ? {suppressLocalAudioPlayback:false,echoCancellation:false,noiseSuppression:false,autoGainControl:false} : false,
+        systemAudio: wantSys?"include":"exclude", preferCurrentTab:true, selfBrowserSurface:"include", surfaceSwitching:"exclude"});
     }catch(e){ toast(inArtifact?"Trang xem trong Claude không cho quay màn hình — mở file trên máy hoặc bản Vercel để quay. Vẫn có thể bấm “🎬 Chiếu kiểu video” rồi quay bằng phần mềm quay màn hình.":"Đã huỷ quay video (cần chọn “Tab này” rồi bấm Chia sẻ)."); V.stream=null; return; }
-    V.mime=["video/mp4;codecs=avc1.42E01E","video/mp4","video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"].find(m=>{ try{ return MediaRecorder.isTypeSupported(m); }catch{ return false; } })||"";
-    V.chunks=[]; V.rec=new MediaRecorder(V.stream,V.mime?{mimeType:V.mime,videoBitsPerSecond:8e6}:{});
+    // micro + âm thanh hệ thống → trộn thành 1 kênh tiếng
+    const sysTracks=V.stream.getAudioTracks(); let micStream=null;
+    if(wantMic){ try{ micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}); }catch(e){ toast("Không mở được micro — video sẽ không có giọng thầy."); } }
+    V.extra=[]; if(micStream) V.extra.push(micStream);
+    let audioTrack=null;
+    if(sysTracks.length||micStream){
+      if(sysTracks.length && !micStream) audioTrack=sysTracks[0];
+      else if(micStream && !sysTracks.length) audioTrack=micStream.getAudioTracks()[0];
+      else { const ac=new (window.AudioContext||window.webkitAudioContext)(), dst=ac.createMediaStreamDestination();
+        const g1=ac.createGain(); g1.gain.value=0.9; ac.createMediaStreamSource(new MediaStream(sysTracks)).connect(g1).connect(dst);
+        const g2=ac.createGain(); g2.gain.value=1.15; ac.createMediaStreamSource(micStream).connect(g2).connect(dst);
+        V.ac=ac; audioTrack=dst.stream.getAudioTracks()[0]; }
+    }
+    V.audioNote = wantSys&&!sysTracks.length ? "Không có âm thanh hệ thống (lần sau nhớ tick “Chia sẻ cả âm thanh của thẻ”)." : "";
+    const recStream=new MediaStream([...V.stream.getVideoTracks(),...(audioTrack?[audioTrack]:[])]);
+    const withA=!!audioTrack;
+    V.mime=(withA?["video/mp4;codecs=avc1.42E01E,mp4a.40.2","video/mp4;codecs=avc1.42E01E,opus","video/mp4","video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"]:["video/mp4;codecs=avc1.42E01E","video/mp4","video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"]).find(m=>{ try{ return MediaRecorder.isTypeSupported(m); }catch{ return false; } })||"";
+    V.chunks=[]; V.rec=new MediaRecorder(recStream,V.mime?{mimeType:V.mime,videoBitsPerSecond:8e6,audioBitsPerSecond:160000}:{});
     V.rec.ondataavailable=e=>{ if(e.data&&e.data.size) V.chunks.push(e.data); };
     V.rec.onstop=saveVideo;
     V.stream.getVideoTracks()[0].addEventListener("ended",()=>{ if(V.on) stopVideo(false); });
   }
-  if($("show").hidden){ openShow(from,false,pre); if($("show").hidden){ if(V.stream) V.stream.getTracks().forEach(t=>t.stop()); return; } }
+  if($("show").hidden){ openShow(from,false,pre); if($("show").hidden){ if(V.stream) V.stream.getTracks().forEach(t=>t.stop()); stopExtras(); V.rec=null; return; } }
   else if(pre){ P.slides=pre; P.playlist=true; }
   setAuto(false); setPen(false); closeLayer(); $("webpop").hidden=true;
   P.i=Math.min(from,P.slides.length-1);
+  if($("vCam").checked) await camOn();
   V.on=true; V.paused=false; V.run++; document.body.classList.add("vmode"); V.title0=V.title0||document.title; vSetRate(+$("vRate").value||1,false); if(V.rate!==1) setTimeout(()=>vBadge(`Tốc độ ×${String(V.rate).replace(".",",")} · ↑ ↓ để đổi`),400);
   try{ if(!document.fullscreenElement) await document.documentElement.requestFullscreen(); }catch(e){}
   if(V.rec){ document.body.classList.add("vrec"); const d=document.createElement("div"); d.className="vrec-dot"; d.id="vrecDot"; document.body.appendChild(d); await new Promise(r=>setTimeout(r,700)); $("vrecDot").remove(); V.rec.start(1000); }
   vLoop(V.run);
 }
+// khung camera nằm trên trang nên được quay cùng (vì đang quay chính tab này)
+async function camOn(){ camOff(); try{ const s=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:640},height:{ideal:640},facingMode:"user"},audio:false});
+    V.cam=s; const box=document.createElement("div"); box.id="vCamBox"; box.className=`vcam ${$("vCamSize").value} ${$("vCamPos").value}`; const v=document.createElement("video"); v.muted=true; v.playsInline=true; v.autoplay=true; v.srcObject=s; box.appendChild(v); document.body.appendChild(box); try{ await v.play(); }catch(e){} }
+  catch(e){ toast(inArtifact?"Trang xem trong Claude không cho mở camera — mở file trên máy hoặc bản Vercel.":"Không mở được camera (kiểm tra quyền camera của trình duyệt)."); } }
+function camOff(){ const b=$("vCamBox"); if(b) b.remove(); if(V.cam){ V.cam.getTracks().forEach(t=>t.stop()); V.cam=null; } }
 function stopVideo(done){
-  if(!V.on) return; V.on=false; V.run++; V.paused=false; P.vlim=null; if(V.title0) document.title=V.title0;
+  if(!V.on) return; camOff(); V.on=false; V.run++; V.paused=false; P.vlim=null; if(V.title0) document.title=V.title0;
   document.body.classList.remove("vmode","vrec"); const h=$("slideHost"); h.classList.remove("tout","t-slide","t-zoom","tin-fade","tin-slide","tin-zoom");
   document.querySelectorAll(".vthink").forEach(x=>x.remove());
   if(V.rec && V.rec.state==="paused"){ try{ V.rec.resume(); }catch(e){} }
-  if(V.rec && V.rec.state!=="inactive"){ V.rec.stop(); } else if(V.stream){ V.stream.getTracks().forEach(t=>t.stop()); V.stream=null; }
+  if(V.rec && V.rec.state!=="inactive"){ V.rec.stop(); } else { if(V.stream){ V.stream.getTracks().forEach(t=>t.stop()); V.stream=null; } stopExtras(); }
   if(!$("show").hidden) render();
   toast(done?(V.rec?"Đã chiếu xong — đang lưu file video…":"Đã chiếu hết bài."):(V.rec?"Đã dừng — đang lưu phần video đã quay…":"Đã dừng chiếu kiểu video."));
 }
+function stopExtras(){ (V.extra||[]).forEach(s=>s.getTracks().forEach(t=>t.stop())); V.extra=[]; if(V.ac){ try{ V.ac.close(); }catch(e){} V.ac=null; } }
 async function saveVideo(){
-  const rec=V.rec; V.rec=null; if(V.stream){ V.stream.getTracks().forEach(t=>t.stop()); V.stream=null; }
+  const rec=V.rec; V.rec=null; if(V.stream){ V.stream.getTracks().forEach(t=>t.stop()); V.stream=null; } stopExtras();
   if(!V.chunks.length){ toast("Không có dữ liệu video."); return; }
   const type=(rec&&rec.mimeType)||V.mime||"video/webm", ext=/mp4/.test(type)?"mp4":"webm";
   const blob=new Blob(V.chunks,{type}); V.chunks=[];
   const name=`video-bai-giang-${safeName((parseAny($("src").value).doc.set_title)||"bai-hoc")}-${nowStamp().slice(0,16).replace(/[: ]/g,"-")}.${ext}`;
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),60000);
-  toast(`Đã lưu ${name} (${(blob.size/1048576).toFixed(1)} MB)${ext==="webm"?" — mở bằng Chrome/VLC, hoặc đổi sang MP4 bằng CapCut":""}.`);
+  toast(`${V.audioNote?V.audioNote+" ":""}Đã lưu ${name} (${(blob.size/1048576).toFixed(1)} MB)${ext==="webm"?" — mở bằng Chrome/VLC, hoặc đổi sang MP4 bằng CapCut":""}.`);
 }
 // phím khi đang chiếu kiểu video: Esc dừng, Space / K tạm dừng, ← → bỏ qua slide
 window.addEventListener("keydown",e=>{ if(!V.on) return; const k=e.key; e.stopImmediatePropagation();
@@ -1992,7 +2028,7 @@ function vPause(){ V.paused=!V.paused;
 $("btnVideo").onclick=()=>startVideo({});
 $("btnRec").onclick=()=>startVideo({record:true});
 $("cVideo").onclick=()=>startVideo({from:P.i});
-[["vSpeed","value"],["vThink","value"],["vTrans","value"],["vRate","value"]].forEach(([id,pr])=>{ const v=store.get(id,null); if(v!=null) $(id)[pr]=v; $(id).addEventListener("change",()=>store.set(id,$(id)[pr])); });
+[["vSpeed","value"],["vThink","value"],["vTrans","value"],["vRate","value"],["vSys","checked"],["vMic","checked"],["vCam","checked"],["vCamPos","value"],["vCamSize","value"]].forEach(([id,pr])=>{ const v=store.get(id,null); if(v!=null) $(id)[pr]=v; $(id).addEventListener("change",()=>store.set(id,$(id)[pr])); });
 const _closeShow=closeShow; closeShow=function(){ if(V.on) stopVideo(false); return _closeShow.apply(this,arguments); };
 
 /* ---------------- bút vẽ ---------------- */
