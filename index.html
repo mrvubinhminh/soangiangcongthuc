@@ -202,6 +202,14 @@ body.vmode .sl-intro img{animation:kburns 9s ease-out both}
 .idpos label{display:flex;gap:6px;align-items:flex-start}
 .idprev{border:1px dashed var(--line);border-radius:8px;min-height:110px;display:grid;place-items:center;overflow:hidden;background:#fff;color:#888;font-size:.76rem;text-align:center;padding:4px}
 .idprev img{max-width:100%;max-height:150px;object-fit:contain}
+#idSvg,#saIn{min-height:0;font:.74rem/1.45 var(--f-code)}
+.svgall{display:flex;flex-direction:column;gap:8px;border:2px solid #5B2C83}
+.sa-steps{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px;font-size:.86rem}
+.sa-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.sa-it{border:1px solid var(--line);border-radius:8px;padding:6px;font-size:.76rem;background:var(--panel);display:flex;flex-direction:column;gap:4px}
+.sa-it .th{height:90px;display:grid;place-items:center;background:#fff;border-radius:5px;overflow:hidden;color:#999}
+.sa-it .th img{max-width:100%;max-height:90px}
+.sa-it b{color:#5B2C83}
 /* ===== thư viện MD ===== */
 .lib-tools{display:flex;flex-direction:column;gap:10px}
 .filebtn.primary-f{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
@@ -563,7 +571,7 @@ body.zooming #ctl,body.zooming #pill,body.zooming #mini,body.zooming #webpop{vis
           </div>
         </div>
         <div class="edbar row">
-          <button type="button" id="btnImg" title="Chèn / sửa ảnh cho dòng đang đặt con trỏ (Alt+I)">🖼 Chèn ảnh vào dòng đang chọn</button>
+          <span class="row" style="gap:6px"><button type="button" id="btnImg" title="Chèn / sửa ảnh cho dòng đang đặt con trỏ (Alt+I)">🖼 Chèn ảnh vào dòng đang chọn</button><button type="button" id="btnSvgAll" title="Thay mọi chỗ chờ [ảnh: …] bằng hình SVG do AI vẽ">✏️ Vẽ SVG cho chỗ chờ ảnh</button></span>
           <span class="edpos" id="edPos" aria-live="polite"></span>
         </div>
         <div class="imgdock card" id="imgDock" hidden>
@@ -573,7 +581,8 @@ body.zooming #ctl,body.zooming #pill,body.zooming #mini,body.zooming #webpop{vis
           <div class="idgrid">
             <div class="idf">
               <label>Link ảnh <small>(https, Google Drive "ai có link", hinh/abc.png) — hoặc dán ảnh (Ctrl+V)</small><input id="idUrl" type="text" placeholder="https://… hoặc dán ảnh vào đây" autocomplete="off"></label>
-              <div class="row"><label class="filebtn">📷 Ảnh từ máy…<input id="idFile" type="file" accept="image/*"></label><small class="hint" id="idSize"></small></div>
+              <div class="row"><label class="filebtn">📷 Ảnh / file .svg từ máy…<input id="idFile" type="file" accept="image/*,.svg"></label><button type="button" id="idSvgAI" title="Sao chép lệnh nhờ AI vẽ hình SVG đúng cho dòng này">🤖 Nhờ AI vẽ SVG</button><small class="hint" id="idSize"></small></div>
+              <label>Hoặc dán mã SVG <small>(&lt;svg …&gt;…&lt;/svg&gt; từ AI, GeoGebra, TikZ → SVG Studio)</small><textarea id="idSvg" rows="3" spellcheck="false" placeholder="<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 400 300&quot;> … </svg>"></textarea></label>
               <label>Chú thích (hiện dưới ảnh khi chiếu)<input id="idCap" type="text" placeholder="vd: Đồ thị hàm số y = sin x"></label>
               <fieldset class="idpos"><legend>Đặt ảnh ở</legend>
                 <label><input type="radio" name="idPos" value="end" checked> Cuối dòng này — ảnh của đúng ý / bước / phương án này</label>
@@ -588,6 +597,16 @@ body.zooming #ctl,body.zooming #pill,body.zooming #mini,body.zooming #webpop{vis
             <button type="button" id="idRemove" hidden>Xoá ảnh khỏi dòng</button>
             <small class="hint">Bấm vào dòng khác trong ô soạn để đổi chỗ chèn — khung này đi theo con trỏ.</small>
           </div>
+        </div>
+        <div class="svgall card" id="svgAll" hidden>
+          <div class="idh"><b>Thay chỗ chờ ảnh bằng hình SVG</b><span id="saCount"></span><button type="button" class="idx" id="saClose" aria-label="Đóng">✕</button></div>
+          <ol class="sa-steps">
+            <li><button type="button" class="primary" id="saCopy">① Sao chép lệnh vẽ hình</button> rồi dán vào Claude / ChatGPT / Gemini <span class="hint">(lệnh đã kèm mô tả và ngữ cảnh của từng chỗ chờ: H1, H2…)</span></li>
+            <li>Chép toàn bộ câu trả lời của AI, dán vào ô dưới, bấm <b>② Thay vào bài</b>. <span class="hint">Mỗi hình nằm sau dòng <code>### H1</code>, <code>### H2</code>…</span></li>
+          </ol>
+          <textarea id="saIn" rows="5" spellcheck="false" placeholder="### H1&#10;```svg&#10;<svg …>…</svg>&#10;```&#10;### H2&#10;…"></textarea>
+          <div class="row"><button type="button" class="primary" id="saApply">② Thay vào bài</button><span class="hint" id="saMsg"></span></div>
+          <div class="sa-list" id="saList"></div>
         </div>
         <textarea id="src" spellcheck="false" aria-label="Nội dung bài giảng"></textarea>
         <div class="row"><button class="primary big" id="btnPlay">▶ Trình chiếu</button><button class="auto big" id="btnAuto">⏵ Chiếu tự động</button><button class="vid big" id="btnVideo" title="Chiếu như video bài giảng: từng dòng hiện chậm rồi tự chuyển slide">🎬 Chiếu kiểu video</button><button class="big" id="btnRec" title="Quay lại phần chiếu kiểu video thành file video (.mp4 / .webm)">⏺ Quay thành video</button><button id="btnCheck">Kiểm tra</button></div>
@@ -2297,14 +2316,14 @@ function phieuHTML(doc){
   if(!sheets.length) return null;
   let html="", keys=[];
   sheets.forEach((sh,si)=>{
-    if(eco){ html+=`<section class="sheet eco-s"><div class="ph-gon"><b>PHIẾU LÀM BÀI · ${rich(sh.title||"Luyện tập")}</b><div>Họ tên: <i></i> Lớp: <i class="s"></i></div></div>`; }
+    if(eco){ html+=`<section class="sheet eco-s${ct&&sh.sections.some(s=>s.kind==="ct"||s.kind==="ghichu")?" hasrc":""}"><div class="ph-gon"><b>PHIẾU LÀM BÀI · ${rich(sh.title||"Luyện tập")}</b><div>Họ tên: <i></i> Lớp: <i class="s"></i></div></div>`; }
     else html+=`<section class="sheet${si?" pb":""}">
       <div class="ph-top"><span>${esc(String($("phSchool").value||""))}</span><span>Ngày: ………………</span></div>
       <h1>PHIẾU LÀM BÀI</h1><h2>${rich(sh.title||"Luyện tập")}</h2>
       <div class="ph-id"><span>Họ và tên: <i></i></span><span>Lớp: <i class="s"></i></span><span>Điểm: <b></b></span></div>`;
     if(ct){
       const cts=sh.sections.filter(s=>s.kind==="ct"||s.kind==="ghichu");
-      if(cts.length) html+=`<div class="recap"><div class="rc-h">Nhắc lại kiến thức</div><div class="rc-g">${cts.map(s=>`<div class="rc-b"><b>${rich(s.title)}</b>${s.items.map(itemHTML).join("")}</div>`).join("")}</div></div>`;
+      if(cts.length) html+=`<div class="recap"><div class="rc-h">Nhắc lại kiến thức</div><div class="rc-g" style="--rn:${Math.min(3,cts.length)}">${cts.map(s=>`<div class="rc-b"><b>${rich(s.title)}</b>${s.items.map(itemHTML).join("")}</div>`).join("")}</div></div>`;
     }
     let th=sh.sections.filter(s=>s.kind==="thuchanh"); if(mix) th=shuffled(th);
     const groups=[["Trắc nghiệm nhiều phương án lựa chọn",th.filter(s=>s.options.length)],["Trắc nghiệm đúng sai",th.filter(s=>!s.options.length&&s.tf.length)],["Trả lời ngắn",th.filter(s=>!s.options.length&&!s.tf.length)]];
@@ -2329,7 +2348,8 @@ function phieuHTML(doc){
     html+=`</section>`;
   });
   if(eco){
-    html=`<div class="flow">${html}</div>`;
+    // có phần nhắc lại kiến thức: mỗi chủ đề một khối 2 cột riêng, bắt đầu trang mới, kiến thức trải hết bề ngang ở đầu trang
+    html = html.includes('eco-s hasrc') ? html.split(/(?=<section class="sheet eco-s)/).filter(x=>x.trim()).map(x=>`<div class="flow">${x}</div>`).join("") : `<div class="flow">${html}</div>`;
     if(key && keys.some(k=>k.rows.length)) html+=`<section class="sheet pb keygon"><b>ĐÁP ÁN</b> (trang riêng cho giáo viên)${keys.map(k=>k.rows.length?`<p><b>${rich(k.title)}:</b> ${k.rows.map(r=>`${r[0]} ${rich(r[1])}`).join(";  ")}</p>`:"").join("")}</section>`;
     return html;
   }
@@ -2387,6 +2407,11 @@ mjx-container{margin:0!important}
 const PH_ECO=`@page{size:A4;margin:8mm 8mm 11mm;@bottom-right{content:"Trang " counter(page) " / " counter(pages);font:7pt Arial,sans-serif;color:#777}}
 body{font-size:9.5pt;line-height:1.3}
 .flow{columns:2;column-gap:6mm;column-rule:.4pt solid #ccc}
+.flow .ph-gon,.flow .recap{column-span:all}
+.flow .recap{margin:2px 0 8px;padding-bottom:6px;border-bottom:.5pt solid #999;break-inside:avoid}
+.flow .ph-gon{break-after:avoid}
+.flow+.flow{break-before:page}
+.flow .rc-g{columns:var(--rn,3);column-gap:8px}
 .sheet.eco-s{margin:0 0 6px}
 .ph-gon{break-inside:avoid;border-top:1pt solid #000;border-bottom:.5pt solid #000;padding:2px 0 3px;margin:8px 0 4px}
 .ph-gon b{font:700 9pt "Be Vietnam Pro",Arial,sans-serif;display:block}
@@ -2833,7 +2858,7 @@ function putImage(token){
   }
   ta.value=lines.join("\n"); const tidy=refTidy(ta.value); if(tidy!==ta.value) ta.value=tidy; save(); build(); ta.focus(); ta.setSelectionRange(selFrom,selTo);
   const lh=parseFloat(getComputedStyle(ta).lineHeight)||20; ta.scrollTop=Math.max(0,(ta.value.slice(0,selFrom).split("\n").length-4)*lh);
-  ID.data=null; $("idUrl").value=""; $("idCap").value=""; $("idSize").textContent=""; ID.prefLine=below?null:i; ID.prefilled=false; dockRefresh(); edPos();
+  ID.data=null; ID.svg=false; $("idSvg").value=""; $("idUrl").value=""; $("idCap").value=""; $("idSize").textContent=""; ID.prefLine=below?null:i; ID.prefilled=false; dockRefresh(); edPos();
 }
 function refTidy(text){ const used=new Set([...text.matchAll(/\]\(@([\w-]+)\)/g),...text.matchAll(/^\s*@[^:\n]{1,25}:\s*@([\w-]+)/gm)].map(m=>m[1]));
   let out=text.split("\n").filter(l=>{ const m=/^\s*\[@([\w-]+)\]:/.exec(l); return !m||used.has(m[1]); }).join("\n");
@@ -2850,6 +2875,99 @@ $("idRemove").onclick=()=>{ const ta=$("src"), lines=ta.value.split("\n"), i=ID.
 $("src").addEventListener("keydown",e=>{ if(e.altKey&&e.code==="KeyI"){ e.preventDefault(); openDock(); } });
 document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&!$("imgDock").hidden&&$("show").hidden&&$("imgDock").contains(document.activeElement)){ $("imgDock").hidden=true; $("src").focus(); } });
 edPos();
+
+/* ---------------- hình SVG: dán mã, nhờ AI vẽ cho từng dòng hoặc mọi chỗ chờ ảnh ---------------- */
+// làm sạch SVG trước khi nhúng: bỏ script, sự kiện, liên kết ngoài; thêm xmlns/viewBox nếu thiếu
+function cleanSvg(code){
+  const m=/<svg[\s\S]*<\/svg>/i.exec(String(code||"")); if(!m) return null;
+  let doc; try{ doc=new DOMParser().parseFromString(m[0],"image/svg+xml"); }catch(e){ return null; }
+  const svg=doc.documentElement; if(!svg||svg.nodeName.toLowerCase()!=="svg"||doc.querySelector("parsererror")) return null;
+  svg.querySelectorAll("script,foreignObject,iframe").forEach(x=>x.remove());
+  [svg,...svg.querySelectorAll("*")].forEach(el=>[...el.attributes].forEach(a=>{ const n=a.name.toLowerCase(), v=a.value.trim().toLowerCase();
+    if(n.startsWith("on")||((n==="href"||n==="xlink:href")&&!(v.startsWith("#")||v.startsWith("data:image/")))) el.removeAttribute(a.name); }));
+  if(!svg.getAttribute("xmlns")) svg.setAttribute("xmlns","http://www.w3.org/2000/svg");
+  if(!svg.getAttribute("viewBox")){ const w=parseFloat(svg.getAttribute("width")), h=parseFloat(svg.getAttribute("height")); if(w&&h) svg.setAttribute("viewBox",`0 0 ${w} ${h}`); }
+  const s=new XMLSerializer().serializeToString(svg);
+  return "data:image/svg+xml;base64,"+btoa(unescape(encodeURIComponent(s)));
+}
+$("idSvg").addEventListener("input",()=>{ const v=$("idSvg").value.trim(); if(!v){ if(ID.svg){ ID.data=null; ID.svg=false; $("idUrl").value=""; prevRefresh(); } return; }
+  const d=cleanSvg(v); if(!d){ $("idSize").textContent="Chưa đọc được mã SVG (cần đủ <svg …> … </svg>)"; return; }
+  ID.data=d; ID.svg=true; $("idUrl").value="(hình SVG đã dán — nhúng thẳng vào bài)"; $("idSize").textContent=`SVG ≈ ${Math.round(d.length*0.75/1024)} KB · giữ nét khi phóng to`; prevRefresh(); });
+// mô tả + ngữ cảnh để AI vẽ đúng hình cho một dòng
+function svgBrief(lines,idx,desc){ const C=lineCtx(lines,idx); let h=idx; while(h>0&&!/^##\s/.test(lines[h].trim())) h--;
+  let e=idx+1; while(e<lines.length&&!/^#{1,2}\s/.test(lines[e].trim())) e++;
+  const blk=lines.slice(Math.max(h,0),e).filter(l=>!/^\s*\[@/.test(l)).join("\n").replace(/!\[[^\]]*\]\([^)]*\)/g,"").slice(0,1400);
+  return {desc:desc||noImg(lines[idx])||"hình minh hoạ", role:C.role||"", block:blk}; }
+const SVG_RULES=`Yêu cầu cho MỖI hình:
+- Chỉ dùng SVG thuần: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 W H"> (W, H khoảng 300–600), nền trắng (<rect width="100%" height="100%" fill="#fff"/>), KHÔNG dùng <script>, <foreignObject>, ảnh ngoài, font ngoài.
+- Toán học chính xác: toạ độ, tỉ lệ, góc, giao điểm tính đúng; trục có mũi tên, nhãn O, x, y; điểm đặc biệt có chấm tròn và nhãn.
+- Nhãn bằng <text> font-family="Times New Roman, serif", cỡ 16–22, chữ nghiêng cho biến; ký hiệu dùng Unicode (π, √, α, ≤, ², ½…), không dùng LaTeX.
+- Nét rõ khi chiếu: đường chính stroke-width 2.5–3; màu: xanh đậm #1414C4, đỏ #C0222E, cam #D46A1C, xanh lá #2E7D4F, xám #555 cho trục; đường phụ nét đứt stroke-dasharray="6 5".
+- Nhãn không chồng lên đường hay nhãn khác; chừa lề 20px.
+- Hình chỉ minh hoạ, không ghi đáp số nếu hình thuộc đề bài.`;
+function svgPromptOne(b){ return `Bạn là giáo viên Toán THPT giỏi vẽ hình minh hoạ. Hãy vẽ MỘT hình SVG cho bài giảng trình chiếu.
+
+Hình cần vẽ: ${b.desc}
+Vị trí trong bài: ${b.role}
+Nội dung khối bài chứa hình (để hiểu ngữ cảnh):
+"""
+${b.block}
+"""
+
+${SVG_RULES}
+
+Chỉ trả về đúng một khối mã \`\`\`svg … \`\`\`, không giải thích.`; }
+$("idSvgAI").onclick=async()=>{ const ta=$("src"), lines=ta.value.split("\n"); if(ID.line<0||!ID.ctx||!ID.ctx.ok){ toast("Đặt con trỏ vào dòng cần hình trước."); return; }
+  const ph=imgsOf(lines[ID.line]).find(x=>!x.src); const b=svgBrief(lines,ID.line,(ph&&ph.cap)||$("idCap").value.trim());
+  try{ await navigator.clipboard.writeText(svgPromptOne(b)); toast("Đã sao chép lệnh vẽ hình — dán vào AI, rồi dán mã SVG trả về vào ô “dán mã SVG”."); }catch{ $("idSvg").value=svgPromptOne(b); $("idSvg").select(); toast("Không sao chép tự động được — lệnh đã ở ô SVG, bấm Ctrl+C rồi xoá ô đi."); }
+  $("idSvg").focus(); };
+// ---- mọi chỗ chờ ảnh [ảnh: mô tả] → H1, H2…
+function holders(){ const lines=$("src").value.split("\n"), out=[]; lines.forEach((l,i)=>{ if(/^\s*\[@/.test(l)) return; imgsOf(l).forEach(x=>{ if(!x.src) out.push({line:i,desc:x.cap}); }); }); return out; }
+function saRefresh(){ const H=holders(); $("saCount").textContent=H.length?`${H.length} chỗ chờ ảnh trong bài`:"Bài chưa có chỗ chờ ảnh nào";
+  $("saList").innerHTML=H.map((h,k)=>`<div class="sa-it"><div class="th">⌛</div><div><b>H${k+1}</b> · dòng ${h.line+1}<br>${esc(h.desc)}</div></div>`).join("");
+  $("saCopy").disabled=!H.length; return H; }
+$("btnSvgAll").onclick=()=>{ const box=$("svgAll"); box.hidden=!box.hidden; if(!box.hidden){ const H=saRefresh(); $("saMsg").textContent=""; if(!H.length) toast("Chưa có chỗ chờ ảnh: dùng “🖼 Chèn ảnh…” → “Chèn chỗ chờ ảnh”, hoặc nhờ AI soạn bài (AI tự ghi [ảnh: …])."); } };
+$("saClose").onclick=()=>{ $("svgAll").hidden=true; };
+$("saCopy").onclick=async()=>{ const H=holders(); if(!H.length) return; const lines=$("src").value.split("\n");
+  const txt=`Bạn là giáo viên Toán THPT giỏi vẽ hình minh hoạ. Hãy vẽ ${H.length} hình SVG cho bài giảng trình chiếu dưới đây.
+
+${H.map((h,k)=>{ const b=svgBrief(lines,h.line,h.desc); return `### H${k+1}
+Hình cần vẽ: ${b.desc}
+Vị trí trong bài: ${b.role}
+Ngữ cảnh:
+"""
+${b.block}
+"""`; }).join("\n\n")}
+
+${SVG_RULES}
+
+Trả lời đúng định dạng, lần lượt từng hình, không giải thích thêm:
+### H1
+\`\`\`svg
+<svg …>…</svg>
+\`\`\`
+### H2
+\`\`\`svg
+…
+\`\`\``;
+  try{ await navigator.clipboard.writeText(txt); toast(`Đã sao chép lệnh vẽ ${H.length} hình.`); }catch{ $("saIn").value=txt; $("saIn").select(); toast("Lệnh đã ở ô bên dưới — bấm Ctrl+C, rồi xoá ô và dán câu trả lời của AI."); } };
+$("saApply").onclick=()=>{ const raw=$("saIn").value; const H=holders(); if(!H.length){ toast("Bài không còn chỗ chờ ảnh."); return; }
+  // tách theo ### Hk; nếu AI không ghi nhãn thì lấy lần lượt từng <svg>
+  const got={}; const parts=raw.split(/^\s*#{1,4}\s*H(\d+)\b.*$/m);
+  if(parts.length>1){ for(let i=1;i<parts.length;i+=2){ const d=cleanSvg(parts[i+1]); if(d) got[+parts[i]]=d; } }
+  else { (raw.match(/<svg[\s\S]*?<\/svg>/gi)||[]).forEach((s,k)=>{ const d=cleanSvg(s); if(d) got[k+1]=d; }); }
+  const ks=Object.keys(got).map(Number).filter(k=>k>=1&&k<=H.length); if(!ks.length){ $("saMsg").textContent="Không tìm thấy mã <svg> nào trong câu trả lời."; return; }
+  const ta=$("src"); const lines=ta.value.split("\n");
+  // thay từ dưới lên để số dòng không lệch; mỗi dòng có thể có nhiều chỗ chờ
+  const byLine={}; H.forEach((h,k)=>{ (byLine[h.line]=byLine[h.line]||[]).push({...h,k:k+1}); });
+  let v=lines.slice(); const newRefs=[];
+  Object.keys(byLine).map(Number).sort((a,b)=>b-a).forEach(li=>{ let n=0; v[li]=v[li].replace(/\[(?:ảnh|anh|hình|hinh|img|image)\s*:([^\]]+)\]/gi,(m,inner)=>{ const [a]=inner.split("|"); if(looksUrl(a)) return m; const h=byLine[li][n++]; if(!h||!got[h.k]) return m;
+      const id="s"+Date.now().toString(36).slice(-4)+h.k; newRefs.push(`[@${id}]: ${got[h.k]}`); return `![${capClean(h.desc)}](@${id})`; }); });
+  let out=v.join("\n").replace(/\s+$/,""); if(newRefs.length){ if(!/<!-- ảnh nhúng/.test(out)) out+="\n\n<"+"!-- ảnh nhúng (đừng sửa các dòng dưới) -->"; out+="\n"+newRefs.reverse().join("\n")+"\n"; }
+  ta.value=out; save(); build(); edPos();
+  $("saList").innerHTML=H.map((h,k)=>`<div class="sa-it"><div class="th">${got[k+1]?`<img src="${got[k+1]}" alt="">`:"✗ thiếu"}</div><div><b>H${k+1}</b> · ${esc(h.desc)}</div></div>`).join("");
+  $("saMsg").textContent=`Đã thay ${newRefs.length}/${H.length} hình.${newRefs.length<H.length?" Hình còn thiếu vẫn giữ chỗ chờ — có thể nhờ AI vẽ lại.":""}`; $("saIn").value="";
+  toast(`Đã thay ${newRefs.length} chỗ chờ bằng hình SVG — bấm Trình chiếu để xem.`); };
 
 /* ---------------- THƯ VIỆN MD (lưu trên máy + đồng bộ Google Sheets) ----------------
    Dữ liệu cùng cấu trúc với SmartLesson MD Pro: id, grade, lessonCode, title, note, quickType, keywords, content, updatedAt
