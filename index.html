@@ -238,6 +238,10 @@ body.vmode .sl-intro img{animation:kburns 9s ease-out both}
 .lib-cols{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:16px;align-items:start}
 @media (max-width:900px){.lib-cols{grid-template-columns:1fr}}
 .lib-list{display:flex;flex-direction:column;gap:6px;max-height:70vh;overflow:auto;padding-right:4px}
+.savebox{display:flex;flex-direction:column;gap:10px;border:2px solid var(--accent)}
+.lgh{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:8px;padding:6px 4px 4px;font:800 .78rem var(--f-ui);text-transform:uppercase;letter-spacing:.06em;color:var(--ink);background:var(--paper)}
+.lgh small{font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0}
+.lgh.sub{font-size:.72rem;color:var(--muted);padding-left:14px;position:static}
 .lib-empty{padding:28px 16px;text-align:center;color:var(--muted);border:2px dashed var(--line);border-radius:10px}
 .li{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;text-align:left;padding:9px 12px;border:1px solid var(--line);border-left:4px solid var(--kc,var(--line));border-radius:8px;background:var(--panel);cursor:pointer;width:100%}
 .li[aria-selected="true"]{border-color:var(--ink);border-left-color:var(--kc,var(--ink));box-shadow:0 0 0 1px var(--ink)}
@@ -322,6 +326,12 @@ pre.gas{margin:0;max-height:220px;overflow:auto;font:.74rem/1.5 var(--f-code);ba
 /* lấp đầy mọi tỉ lệ màn hình (4:3, 3:2, 16:10, 16:9…) */
 #show[data-fit="fill"] .stage{width:100vw;height:100vh;height:100dvh;aspect-ratio:auto;max-height:none}
 .stage{font-size:min(4.6cqh,2.6cqw)}
+.sl-band.gon{padding:1.1cqh 3cqw;font-size:.7em;font-weight:800;letter-spacing:.03em;justify-content:space-between}
+.sl-band.gon .bt{max-width:none;font-size:.9em;display:flex;align-items:center}
+.stage[data-band="gon"] .sl-body{padding:2.2cqh 4cqw 4.6cqh}
+.stage[data-band="gon"] .sl-foot .fl{display:none}
+.stage[data-band="gon"] .th-hint{display:none}
+.stage[data-band="gon"] .sl-foot{font-size:.36em;opacity:.7}
 .sl-band .tag{font-size:.5em;letter-spacing:.14em;opacity:.85;margin-right:.6em;padding:.2em .6em;border:.1em solid currentColor;border-radius:.3em;vertical-align:middle}
 .sl-band small{font-size:.5em;font-weight:600;opacity:.88;text-transform:none;letter-spacing:0;text-align:right;max-width:38%}
 .stage[data-theme="gradient"] .sl-band{background:linear-gradient(110deg,var(--c),color-mix(in srgb,var(--c) 55%,#7c3aed))}
@@ -610,6 +620,21 @@ body.zooming #ctl,body.zooming #pill,body.zooming #mini,body.zooming #webpop{vis
         </div>
         <textarea id="src" spellcheck="false" aria-label="Nội dung bài giảng"></textarea>
         <div class="row"><button class="primary big" id="btnPlay">▶ Trình chiếu</button><button class="auto big" id="btnAuto">⏵ Chiếu tự động</button><button class="vid big" id="btnVideo" title="Chiếu như video bài giảng: từng dòng hiện chậm rồi tự chuyển slide">🎬 Chiếu kiểu video</button><button class="big" id="btnRec" title="Quay lại phần chiếu kiểu video thành file video (.mp4 / .webm)">⏺ Quay thành video</button><button id="btnCheck">Kiểm tra</button></div>
+        <div class="savebox card" id="saveBox" hidden>
+          <div class="idh"><b>📚 Lưu bài vào thư viện</b><span id="sbFrom"></span><button type="button" class="idx" id="sbClose" aria-label="Đóng">✕</button></div>
+          <div class="lib-form">
+            <label class="w">Tên bài<input id="sbTitle"></label>
+            <label>Lớp<input id="sbGrade" list="sbGrades" placeholder="Lớp 11"><datalist id="sbGrades"><option value="Lớp 6"><option value="Lớp 7"><option value="Lớp 8"><option value="Lớp 9"><option value="Lớp 10"><option value="Lớp 11"><option value="Lớp 12"></datalist></label>
+            <label>Loại bài (cấu trúc prompt)<select id="sbType"></select></label>
+            <label>Mã bài<input id="sbCode" placeholder="Bài 1"></label>
+            <label>Chú thích<input id="sbNote" placeholder="vd: dạy 11A3 tiết 2"></label>
+          </div>
+          <fieldset class="idpos"><legend>Xếp bài trong thư viện (và thư mục khi tải về) theo</legend>
+            <label><input type="radio" name="sbGroup" value="grade"> <b>Lớp</b> → loại bài <span class="hint">· vd: Lớp 11 / Phiếu phân hoá 45' / Tên bài.md</span></label>
+            <label><input type="radio" name="sbGroup" value="type"> <b>Cấu trúc prompt</b> (loại bài) → lớp <span class="hint">· vd: Phiếu phân hoá 45' / Lớp 11 / Tên bài.md</span></label>
+          </fieldset>
+          <div class="row"><button type="button" class="primary" id="sbSave">Lưu</button><button type="button" id="sbSaveNew" hidden>Lưu thành bài mới</button><span class="hint" id="sbPath"></span></div>
+        </div>
         <div class="msgs" id="msgs" aria-live="polite"></div>
       </div>
       <div class="pane">
@@ -660,6 +685,7 @@ body.zooming #ctl,body.zooming #pill,body.zooming #mini,body.zooming #webpop{vis
           <label class="filebtn">📁 Tải cả thư mục…<input id="libDir" type="file" webkitdirectory multiple></label>
           <button id="libNew">＋ Lưu bài đang soạn</button>
           <button id="libExport" title="Sao lưu toàn bộ thư viện thành 1 file .json">⤓ Sao lưu .json</button>
+          <button id="libZip" title="Tải các bài đang lọc thành file .zip, xếp thư mục theo lựa chọn “Xếp theo”">⤓ Tải thư mục .zip</button>
           <span class="lib-sync" id="libSync" title="Trạng thái Google Sheets"><i></i><span>Chưa nối Google Sheets</span></span>
           <button id="libSheetBtn">⚙ Google Sheets</button>
         </div>
@@ -668,6 +694,7 @@ body.zooming #ctl,body.zooming #pill,body.zooming #mini,body.zooming #webpop{vis
           <select id="libGrade" aria-label="Lọc theo lớp"></select>
           <select id="libType" aria-label="Lọc theo loại bài"></select>
           <button type="button" id="libPickAll" title="Chọn mọi bài đang hiện trong danh sách để chiếu liền mạch">☑ Chọn tất cả để chiếu</button>
+          <select id="libGroup" aria-label="Xếp theo" title="Xếp bài theo lớp hoặc theo cấu trúc prompt (loại bài)"><option value="grade">Xếp theo: Lớp → loại bài</option><option value="type">Xếp theo: Cấu trúc prompt → lớp</option><option value="none">Không nhóm</option></select>
           <select id="libSort" aria-label="Sắp xếp"><option value="new">Mới cập nhật</option><option value="name">Tên A→Z</option><option value="grade">Theo lớp, mã bài</option></select>
         </div>
         <div class="chips lib-chips" id="libChips"></div>
@@ -852,6 +879,7 @@ Bấm vào ảnh để phóng to; phím <kbd>I</kbd> ẩn/hiện khung ảnh.<br
   <button type="button" id="cHelp" class="wideonly" title="Phím tắt (?)">?</button>
   <span class="sep"></span>
   <button type="button" id="cHide" title="Thu gọn menu (H)" aria-label="Thu gọn menu">▾ Ẩn</button>
+  <button type="button" id="cBand" class="wideonly" title="Đầu slide gọn / đầy đủ (J)">▔ Đầu gọn</button>
   <button type="button" id="cFit" title="Lấp đầy màn hình / giữ khung 16:9 (L)">▣ Lấp đầy</button>
   <button type="button" id="cFull" class="wideonly" title="Toàn màn hình (F)" aria-label="Toàn màn hình">⛶</button>
   <button type="button" id="cExit" title="Thoát (Esc)" aria-label="Thoát">✕</button>
@@ -1730,7 +1758,10 @@ function slideHTML(sl){
   if(sl.kind==="intro") return `<div class="slide sl-intro" style="--bg:url('${String(sl.img).replace(/'/g,"%27")}')"><div class="ibg"></div><img src="${esc(sl.img)}" alt="${esc(sl.cap||sl.title)}" onerror="this.closest('.sl-intro').classList.add('broken')"><div class="icap">${sl.kicker?`<small>${esc(sl.kicker)}</small>`:""}<h2>${rich(sl.title)}</h2>${sl.cap?`<p>${rich(sl.cap)}</p>`:""}</div><div class="ibad">Không tải được ảnh mở đầu<br><small>${esc(String(sl.img).slice(0,70))}</small></div></div>`;
   if(sl.kind==="cover") return `<div class="slide"><div class="sl-cover"><div class="k">${esc(sl.kicker)}</div><h2>${rich(sl.title)}</h2><div class="bar"></div>
     ${sl.chips.length?`<div class="chips">${sl.chips.map(x=>`<span style="--cc:${x.c}">${rich(x.t)}</span>`).join("")}</div>`:""}${sl.meta?`<div class="meta">${esc(sl.meta)}</div>`:""}</div></div>`;
-  const band=(tag,extra="")=>`<div class="sl-band"><span>${tag?`<span class="tag">${tag}</span>`:""}${rich(sl.title)}</span>${extra||`<small>${rich(sl.topic||"")}</small>`}</div>`;
+  // đầu slide gọn (mặc định): chỉ tên ví dụ / câu / khối, bỏ tên bài, nhãn và chú thích phụ; giữ đồng hồ của câu thực hành
+  const band=(tag,extra="",tm="")=> P.opts.band!=="full"
+    ? `<div class="sl-band gon"><span>${rich(sl.title)}</span>${tm?`<small class="bt">${tm}</small>`:""}</div>`
+    : `<div class="sl-band"><span>${tag?`<span class="tag">${tag}</span>`:""}${rich(sl.title)}</span>${extra||`<small>${rich(sl.topic||"")}</small>`}</div>`;
   if(sl.kind==="sum"){
     const g=sl.group, tn=g.filter(x=>x.sec.options.length), graded=tn.filter(x=>x.res), ok=graded.filter(x=>x.res==="ok").length;
     return `<div class="slide">${band("Tổng kết")}<div class="sl-body"><div class="sl-content sum">
@@ -1764,7 +1795,7 @@ function slideHTML(sl){
     : s.options.length ? s.options.filter(o=>o.ok).map(o=>o.L).join(", ")
     : s.tf.length ? s.tf.map(o=>`${o.L}) ${o.val?"Đ":"S"}`).join("   ") : "";
   const figs=qfigs.slice(); imgsOf(s.answer).forEach(im=>figs.push(figHTML(im,1,"đáp án"))); s.steps.forEach((t,k)=>imgsOf(t).forEach(im=>figs.push(figHTML(im,k+2,`lời giải ${k+1}`))));
-  return `<div class="slide">${band(sl.tag||"Thực hành",`<small style="display:flex;gap:.6em;align-items:center;justify-content:flex-end">${rich(sl.topic||"")}${tm}</small>`)}
+  return `<div class="slide">${band(sl.tag||"Thực hành",`<small style="display:flex;gap:.6em;align-items:center;justify-content:flex-end">${rich(sl.topic||"")}${tm}</small>`,tm)}
     ${wrap(`<div class="sl-content">${q}${opts}${tf}
       ${ansTxt?`<div class="ans" data-st="1"><span class="lb">Đáp án</span>${ansTxt}${s.answer?imark(s.answer,1):""}</div>`:""}
       ${s.steps.length?`<ol class="steps">${s.steps.map((t,k)=>`<li data-st="${k+2}"><span class="n-dot">${k+1}</span><span>${rich(t)}${imark(t,k+2)}</span></li>`).join("")}</ol>`:""}
@@ -1815,9 +1846,9 @@ function reveal(r){ r.classList.add("shown"); r.querySelector(".v").textContent=
 let fitTok=0;
 async function render(){
   const sl=P.slides[P.i]; if(!sl) return;
-  const st=$("stage"); st.dataset.theme=P.opts.theme; st.dataset.bold=String(P.opts.bold);
+  const st=$("stage"); st.dataset.theme=P.opts.theme; st.dataset.bold=String(P.opts.bold); st.dataset.band=P.opts.band==="full"?"full":"gon";
   st.style.setProperty("--zoom",P.opts.zoom); st.style.setProperty("--c",sl.c);
-  $("slideHost").innerHTML=slideHTML(sl)+`<div class="sl-foot"><span>${sl.lesson?esc(sl.lesson)+" · ":""}${esc(KLABEL[sl.kind])}</span><span>${P.i+1} / ${P.slides.length}</span></div><div class="sl-prog" style="width:${(P.i+1)/P.slides.length*100}%"></div>`;
+  $("slideHost").innerHTML=slideHTML(sl)+`<div class="sl-foot"><span class="fl">${sl.lesson?esc(sl.lesson)+" · ":""}${esc(KLABEL[sl.kind])}</span><span>${P.i+1} / ${P.slides.length}</span></div><div class="sl-prog" style="width:${(P.i+1)/P.slides.length*100}%"></div>`;
   $("slideHost").querySelectorAll(".mfig img").forEach(im=>{ const setAr=()=>{ if(im.naturalWidth){ im.closest(".mfig").dataset.ar=(im.naturalWidth/im.naturalHeight).toFixed(2); mediaUpdate(); } }; if(im.complete) setAr(); else im.addEventListener("load",setAr,{once:true}); });
   applyStep(); syncTimerChip(); preloadNext();
   $("cCnt").textContent=`${P.i+1} / ${P.slides.length}`;
@@ -2105,7 +2136,7 @@ function pick(){
   $("layer").innerHTML=`<div class="pick"><div class="k">MỜI HỌC SINH SỐ</div><div class="num" id="pnum">–</div><div class="sub">Sĩ số ${N} · còn ${P.bag.length} số chưa gọi · bấm R gọi tiếp, Esc để đóng</div></div>`; $("layer").dataset.kind="pick";
   let k=0; const roll=setInterval(()=>{ $("pnum") && ($("pnum").textContent=1+Math.floor(Math.random()*N)); if(++k>14){ clearInterval(roll); $("pnum") && ($("pnum").textContent=num); } },55);
 }
-const KEYS=[["→ Space Enter","Tiếp / hiện bước tiếp theo"],["← Backspace","Lùi"],["Home / End","Slide đầu / cuối"],["O","Tổng quan, chọn slide"],["H","Thu gọn / hiện menu"],["F","Toàn màn hình"],["L","Lấp đầy màn hình / giữ khung 16:9"],
+const KEYS=[["→ Space Enter","Tiếp / hiện bước tiếp theo"],["← Backspace","Lùi"],["Home / End","Slide đầu / cuối"],["O","Tổng quan, chọn slide"],["H","Thu gọn / hiện menu"],["F","Toàn màn hình"],["L","Lấp đầy màn hình / giữ khung 16:9"],["J","Đầu slide gọn / đầy đủ"],
   ["T","Đổi kiểu màu"],["B","Đổi độ đậm"],["+ / −","Chữ to / nhỏ"],["D","Hiện đáp án câu thực hành"],["G","Bật / dừng đồng hồ"],["I","Hiện / ẩn khung hình minh hoạ"],["[  /  ]","Chiếu nhiều bài: về bài trước / sang bài sau"],["M","Chiếu kiểu video từ slide này (Esc dừng, Space tạm dừng)"],["↑ ↓  hoặc  + −","Khi chiếu kiểu video: tăng / giảm tốc độ (×0,5 → ×4); phím 1–4 chọn nhanh ×1…×4, 0 về ×1"],["V","Phóng to ảnh toàn màn hình (cuộn chuột / kéo để xem chi tiết)"],["N","Mở trang web dạy học (cửa sổ ¼, ½, toàn màn hình)"],["A","Bật / tắt tự động chạy"],["R","Bốc thăm học sinh"],
   ["P","Bật / tắt bút vẽ"],["Z / X","Xoá nét cuối / xoá hết nét"],[".  /  W","Màn đen / màn trắng"],["?","Bảng phím tắt"],["Esc","Đóng lớp phủ / thoát"]];
 function help(){ layer("help",`<div class="help"><h3>Phím tắt</h3><div class="g">${KEYS.map(k=>`<div><kbd>${esc(k[0])}</kbd> ${esc(k[1])}</div>`).join("")}</div></div>`); }
@@ -2222,6 +2253,7 @@ document.addEventListener("keydown",e=>{
   else if(k==="h"||k==="H"){ setMenu(!$("ctl").classList.contains("collapsed")); return; }
   else if(k==="f"||k==="F") $("cFull").click();
   else if(k==="l"||k==="L") $("cFit").click();
+  else if(k==="j"||k==="J") $("cBand").click();
   else if(k==="t"||k==="T"){ const i=THEMES.findIndex(t=>t.id===P.opts.theme); P.opts.theme=THEMES[(i+1)%THEMES.length].id; saveOpts(); syncCtl(); render(); }
   else if(k==="b"||k==="B"){ P.opts.bold=(P.opts.bold+1)%3; saveOpts(); syncCtl(); render(); }
   else if(k==="+"||k==="=") $("cBig").click(); else if(k==="-") $("cSmall").click();
@@ -2243,6 +2275,9 @@ document.addEventListener("keydown",e=>{
 });
 window.addEventListener("resize",()=>{ if(!$("show").hidden){ sizeInk(); fit(); } });
 function applyFit(){ const fill=P.opts.fill!==false; $("show").dataset.fit=fill?"fill":"169"; $("cFit").textContent=fill?"▣ Lấp đầy":"▭ 16:9"; $("cFit").setAttribute("aria-pressed",fill); }
+function syncBand(){ $("cBand").textContent=P.opts.band==="full"?"▀ Đầu đầy đủ":"▔ Đầu gọn"; $("cBand").setAttribute("aria-pressed",P.opts.band!=="full"); }
+$("cBand").onclick=()=>{ P.opts.band=P.opts.band==="full"?"gon":"full"; saveOpts(); syncBand(); render(); toast(P.opts.band==="full"?"Đầu slide đầy đủ (tên bài, nhãn)":"Đầu slide gọn — dành chỗ cho nội dung"); };
+syncBand();
 $("cFit").onclick=()=>{ P.opts.fill=P.opts.fill===false; saveOpts(); applyFit(); sizeInk(); fit(); toast(P.opts.fill?"Lấp đầy toàn màn hình":"Giữ khung 16:9"); };
 document.addEventListener("fullscreenchange",()=>setTimeout(()=>{ if(!$("show").hidden){ sizeInk(); fit(); } },120));
 
@@ -2739,7 +2774,7 @@ function cleanAI(s){
 }
 $("src").addEventListener("paste",()=>setTimeout(()=>{ const v=$("src").value; if(/```/.test(v)){ $("src").value=cleanAI(v); save(); modeFromKind(); build(); toast("Đã bỏ dấu ``` của AI."); } },0));
 // kiểu bài ở khung chiếu → loại bài ở prompt
-function modeFromKind(){ const K=KINDS[$("pKind").value]; if(K && $("mMode").value!==K.mode){ $("mMode").value=K.mode; store.set("mMode",K.mode); } }
+function modeFromKind(){ try{ rememberAI(); }catch(e){} const K=KINDS[$("pKind").value]; if(K && $("mMode").value!==K.mode){ $("mMode").value=K.mode; store.set("mMode",K.mode); } }
 $("cpPrompt").onclick=async()=>{ try{ await navigator.clipboard.writeText(prompt()); toast("Đã sao chép prompt."); }catch{ const r=document.createRange(); r.selectNodeContents($("prompt")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast("Đã chọn sẵn — bấm Ctrl+C."); } };
 refreshPrompt();
 
@@ -3052,9 +3087,15 @@ function libRender(){
   $("libChips").innerHTML=`<button type="button" data-q="" aria-pressed="${!LIB.qt}">Tất cả · ${LIB.items.length}</button>`+QTYPES.filter(cnt).map(q=>`<button type="button" data-q="${esc(q)}" aria-pressed="${LIB.qt===q}" style="--kc:${QCOLOR[q]}">${esc(q)} · ${cnt(q)}</button>`).join("");
   const list=libFiltered();
   if(!list.some(x=>x.id===LIB.sel)) LIB.sel=list[0]?list[0].id:null;
-  $("libList").innerHTML=list.length?list.map(x=>{ const gm=/(\d+)/.exec(x.grade);
+  const grp=$("libGroup").value, gkey=x=>grp==="type"?(x.quickType||"Chưa phân loại"):(x.grade||"Chưa ghi lớp"), skey=x=>grp==="type"?(x.grade||"Chưa ghi lớp"):(x.quickType||"Chưa phân loại");
+  let rows=list;
+  if(grp!=="none"){ const ord=k=>grp==="type"?(QTYPES.indexOf(k)<0?99:QTYPES.indexOf(k)):0;
+    rows=list.slice().sort((a,b)=>(ord(gkey(a))-ord(gkey(b)))||gkey(a).localeCompare(gkey(b),"vi",{numeric:true})||skey(a).localeCompare(skey(b),"vi",{numeric:true})||list.indexOf(a)-list.indexOf(b)); }
+  let lastG=null, lastS=null;
+  $("libList").innerHTML=rows.length?rows.map(x=>{ const gm=/(\d+)/.exec(x.grade);
+    let hd=""; if(grp!=="none"){ const g=gkey(x), s=skey(x); if(g!==lastG){ hd+=`<div class="lgh" style="--kc:${QCOLOR[g]||"var(--line)"}">${grp==="type"?"🧩":"🎓"} ${esc(g)} <small>· ${rows.filter(y=>gkey(y)===g).length} bài</small></div>`; lastG=g; lastS=null; } if(s!==lastS){ hd+=`<div class="lgh sub">${esc(s)}</div>`; lastS=s; } }
     const pk=LIB.pick.indexOf(x.id);
-    return `<div class="lrow"><label class="lpick" title="Chọn để chiếu nhiều bài liền mạch"><input type="checkbox" data-pick="${esc(x.id)}" ${pk>=0?"checked":""} aria-label="Chọn bài ${esc(x.title)}"><span>${pk>=0?pk+1:""}</span></label><button type="button" class="li" role="option" data-id="${esc(x.id)}" aria-selected="${x.id===LIB.sel}" style="--kc:${QCOLOR[x.quickType]||"var(--line)"}"><span class="g">${gm?`Lớp<b>${gm[1]}</b>`:esc(x.grade||"—")}</span><span class="tt">${esc(x.lessonCode?x.lessonCode+": ":"")}${esc(x.title)}${x.id===LIB.cur?" ✎":""}</span><span class="mt"><em>${esc(x.quickType||"")}</em>${x.note?" · "+esc(x.note):""} · ${esc(x.updatedAt.slice(0,16))}</span></button></div>`; }).join("")
+    return hd+`<div class="lrow"><label class="lpick" title="Chọn để chiếu nhiều bài liền mạch"><input type="checkbox" data-pick="${esc(x.id)}" ${pk>=0?"checked":""} aria-label="Chọn bài ${esc(x.title)}"><span>${pk>=0?pk+1:""}</span></label><button type="button" class="li" role="option" data-id="${esc(x.id)}" aria-selected="${x.id===LIB.sel}" style="--kc:${QCOLOR[x.quickType]||"var(--line)"}"><span class="g">${gm?`Lớp<b>${gm[1]}</b>`:esc(x.grade||"—")}</span><span class="tt">${esc(x.lessonCode?x.lessonCode+": ":"")}${esc(x.title)}${x.id===LIB.cur?" ✎":""}</span><span class="mt"><em>${esc(x.quickType||"")}</em>${x.note?" · "+esc(x.note):""} · ${esc(x.updatedAt.slice(0,16))}</span></button></div>`; }).join("")
     : `<div class="lib-empty">${LIB.items.length?"Không có bài nào khớp bộ lọc.":"Thư viện trống. Bấm <b>⤒ Tải lên file .md…</b> hoặc kéo thả file vào đây."}</div>`;
   libPickBar(); libDetail();
 }
@@ -3112,16 +3153,63 @@ $("libSort").value=store.get("libSort","new");
 let libQT; $("libQ").addEventListener("input",()=>{ clearTimeout(libQT); libQT=setTimeout(()=>{ LIB.q=$("libQ").value; libRender(); },150); });
 $("libFiles").onchange=e=>{ libImport(e.target.files); e.target.value=""; };
 $("libDir").onchange=e=>{ libImport(e.target.files); e.target.value=""; };
+/* ---- lưu bài: chọn lớp + loại bài (cấu trúc prompt), xếp thư mục theo lớp hoặc theo cấu trúc prompt ---- */
+$("sbType").innerHTML=QTYPES.map(q=>`<option>${esc(q)}</option>`).join("");
+$("libGroup").value=store.get("libGroup","grade");
+function libGroupSet(v){ $("libGroup").value=v; store.set("libGroup",v); document.querySelectorAll('input[name="sbGroup"]').forEach(r=>r.checked=r.value===v); }
+$("libGroup").onchange=()=>{ libGroupSet($("libGroup").value); libRender(); };
+const sbPathOf=(g,ty,ti)=>{ const grp=$("libGroup").value==="type"?"type":"grade"; const a=safeName(g||"Chưa ghi lớp"), b=safeName(ty||"Chưa phân loại"); return (grp==="type"?`${b}/${a}`:`${a}/${b}`)+`/${safeName(ti||"bai")}.md`; };
+function sbPreview(){ $("sbPath").textContent="📁 "+sbPathOf($("sbGrade").value.trim(),$("sbType").value,$("sbTitle").value.trim()); }
+["sbGrade","sbType","sbTitle"].forEach(id=>$(id).addEventListener("input",sbPreview));
+document.querySelectorAll('input[name="sbGroup"]').forEach(r=>r.addEventListener("change",()=>{ libGroupSet(r.value); sbPreview(); libRender(); }));
+// bài vừa dán từ AI: nhớ lớp + loại bài đã chọn ở “Tạo bài bằng AI” để điền sẵn khi lưu
+function rememberAI(){ const K=KINDS[$("pKind").value]; store.set("aiOrigin",{chip:K?K.chip:"",grade:$("pGrade").value,lesson:$("pLesson").value.trim(),sig:$("src").value.trim().slice(0,200)}); }
 function libSaveCurrent(){
   const text=$("src").value; if(!text.trim()){ toast("Ô nội dung đang trống."); return; }
   let cur=LIB.items.find(i=>i.id===LIB.cur);
-  // chỉ ghi đè khi vẫn là cùng một bài (cùng tiêu đề trong nội dung); đổi sang bài khác thì lưu thành bài mới
   if(cur && mdToLesson("a.md",cur.content).title!==mdToLesson("a.md",text).title) cur=null;
-  if(cur){ if(cur.content.trim()===text.trim()){ toast(`“${cur.title}” đã được lưu, không có gì thay đổi.`); return; } cur.content=text.trim()+"\n"; cur.updatedAt=nowStamp(); if(!cur.keywords) cur.keywords=keywordsOf(text); libSave(); sheetUpsert(cur); LIB.sel=cur.id; libRender(); toast(`Đã cập nhật “${cur.title}” trong thư viện.`); return; }
-  const L=mdToLesson("bai.md",text);
-  LIB.items.unshift(L); LIB.cur=L.id; store.set("libCur",L.id); LIB.sel=L.id; libSave(); sheetUpsert(L); libRender(); toast(`Đã lưu “${L.title}” vào thư viện — mở Thư viện MD để sửa lớp, loại bài.`);
+  const guess=mdToLesson("bai.md",text), ai=store.get("aiOrigin",null), fromAI=!!(ai&&ai.sig&&text.trim().startsWith(ai.sig.slice(0,120)));
+  const base=cur||guess;
+  $("sbTitle").value=base.title; $("sbCode").value=base.lessonCode||""; $("sbNote").value=base.note||"";
+  $("sbGrade").value=(cur&&cur.grade)||(fromAI&&ai.grade)||guess.grade||"";
+  $("sbType").value=(cur&&cur.quickType)||(fromAI&&ai.chip)||guess.quickType;
+  $("sbFrom").textContent=cur?`Cập nhật bài “${cur.title}”`:fromAI?`Bài do AI soạn · ${ai.chip} · ${ai.grade}`:"Bài mới";
+  $("sbSaveNew").hidden=!cur; $("sbSave").textContent=cur?"Cập nhật bài":"Lưu";
+  libGroupSet($("libGroup").value==="type"?"type":"grade"); sbPreview();
+  $("saveBox").hidden=false; $("saveBox").dataset.cur=cur?cur.id:""; $("saveBox").scrollIntoView({block:"nearest",behavior:"smooth"}); $("sbTitle").focus();
 }
-$("libNew").onclick=libSaveCurrent; $("btnLibSave").onclick=libSaveCurrent;
+function sbCommit(asNew){
+  const text=$("src").value, id=asNew?"":$("saveBox").dataset.cur, cur=id&&LIB.items.find(i=>i.id===id);
+  const meta={title:$("sbTitle").value.trim()||"Bài chưa đặt tên",grade:$("sbGrade").value.trim(),quickType:$("sbType").value,lessonCode:$("sbCode").value.trim(),note:$("sbNote").value.trim()};
+  let L;
+  if(cur){ Object.assign(cur,meta,{content:text.trim()+"\n",updatedAt:nowStamp()}); if(!cur.keywords) cur.keywords=keywordsOf(text); L=cur; }
+  else { L=libNorm({...mdToLesson("bai.md",text),...meta,id:newId(),updatedAt:nowStamp()}); LIB.items.unshift(L); }
+  LIB.cur=L.id; store.set("libCur",L.id); LIB.sel=L.id; libSave(); sheetUpsert(L); libRender(); $("saveBox").hidden=true;
+  toast(`Đã lưu “${L.title}” → ${sbPathOf(L.grade,L.quickType,L.title).replace(/\.md$/,"")}`);
+}
+$("sbSave").onclick=()=>sbCommit(false); $("sbSaveNew").onclick=()=>sbCommit(true);
+$("sbClose").onclick=()=>{ $("saveBox").hidden=true; };
+["sbTitle","sbGrade","sbCode","sbNote"].forEach(id=>$(id).addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $("sbSave").click(); } }));
+// tải .zip: mỗi bài một file .md (có phần đầu Lớp / Chọn nhanh…) trong thư mục theo lựa chọn “Xếp theo”
+const CRC=(()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; } return t; })();
+function crc32(u){ let c=0xFFFFFFFF; for(let i=0;i<u.length;i++) c=CRC[(c^u[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function makeZip(files){ const enc=new TextEncoder(), parts=[], cen=[]; let off=0;
+  const d=new Date(), dt=((d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1))&0xFFFF, dd=(((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate())&0xFFFF;
+  files.forEach(({name,text})=>{ const nb=enc.encode(name), db=enc.encode(text), c=crc32(db);
+    const h=new DataView(new ArrayBuffer(30)); h.setUint32(0,0x04034b50,true); h.setUint16(4,20,true); h.setUint16(6,0x0800,true); h.setUint16(8,0,true); h.setUint16(10,dt,true); h.setUint16(12,dd,true); h.setUint32(14,c,true); h.setUint32(18,db.length,true); h.setUint32(22,db.length,true); h.setUint16(26,nb.length,true); h.setUint16(28,0,true);
+    parts.push(new Uint8Array(h.buffer),nb,db);
+    const ce=new DataView(new ArrayBuffer(46)); ce.setUint32(0,0x02014b50,true); ce.setUint16(4,20,true); ce.setUint16(6,20,true); ce.setUint16(8,0x0800,true); ce.setUint16(10,0,true); ce.setUint16(12,dt,true); ce.setUint16(14,dd,true); ce.setUint32(16,c,true); ce.setUint32(20,db.length,true); ce.setUint32(24,db.length,true); ce.setUint16(28,nb.length,true); ce.setUint32(42,off,true);
+    cen.push(new Uint8Array(ce.buffer),nb); off+=30+nb.length+db.length; });
+  const cs=cen.reduce((a,b)=>a+b.length,0), e=new DataView(new ArrayBuffer(22)); e.setUint32(0,0x06054b50,true); e.setUint16(8,files.length,true); e.setUint16(10,files.length,true); e.setUint32(12,cs,true); e.setUint32(16,off,true);
+  return new Blob([...parts,...cen,new Uint8Array(e.buffer)],{type:"application/zip"}); }
+$("libZip").onclick=async()=>{ const ls=libFiltered(); if(!ls.length){ toast("Không có bài nào để tải."); return; }
+  const used=new Set(), files=ls.map(x=>{ let n=sbPathOf(x.grade,x.quickType,[x.lessonCode,x.title].filter(Boolean).join(" - ")); let k=2; while(used.has(n)) n=n.replace(/( \(\d+\))?\.md$/,` (${k++}).md`); used.add(n); return {name:"thu-vien-md/"+n,text:lessonToMd(x)}; });
+  const blob=makeZip(files), name=`thu-vien-md-${$("libGroup").value==="type"?"theo-loai-bai":"theo-lop"}-${nowStamp().slice(0,10)}.zip`;
+  if(inArtifact&&dlApi){ try{ await dlApi.save({filename:name,data:new Uint8Array(await blob.arrayBuffer())}); toast(`Đã lưu ${name} (${files.length} bài).`); }catch(e){ toast(e&&e.code==="declined"?"Đã huỷ.":"Không lưu được file .zip ở đây — mở file trên máy hoặc bản Vercel."); } return; }
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+  toast(`Đã tải ${files.length} bài, xếp thư mục ${$("libGroup").value==="type"?"theo cấu trúc prompt → lớp":"theo lớp → loại bài"}.`); };
+
+$("libNew").onclick=()=>{ showView("soan"); libSaveCurrent(); }; $("btnLibSave").onclick=libSaveCurrent;
 // nếu thầy chọn nhiều file ở “Mở file…” trang Soạn: đưa hết vào thư viện, mở bài đầu
 $("fileIn").onchange=async e=>{ const fs=[...e.target.files]; e.target.value=""; if(!fs.length) return;
   if(fs.length===1 && !/\.json$/i.test(fs[0].name)){ const txt=(await fs[0].text()).replace(/^﻿/,"").replace(/\r\n?/g,"\n"); const fm=/^---\n[\s\S]*?\n---\n?([\s\S]*)$/.exec(txt); $("src").value=fm?fm[1].replace(/^\n+/,""):txt; LIB.cur=null; store.set("libCur",null); save(); build(); return; }
